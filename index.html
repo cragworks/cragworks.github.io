@@ -1,45 +1,2355 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
+<body style="margin: 0;">
 
-<head>
-	<title>Cragworks</title>
-	<link href="images/favicon.ico" rel="icon" />
+<!-- import needed apis -->
+<script src="WebAudioManager.js"></script>
+<!-- This is the GamePad canvas.-->
+<!-- Set the scroll bar display to "block."-->
+<canvas id="gpCanvas" style="display: block;"></canvas>
 
-	<style>
-	.container {
-      width:1024px;
-      background-color: clear;
-      height: 100vh;
-      margin-left: auto;
-      margin-right: auto;
-    }
-	</style>
-</head>
+<!-- Everything after this point is JavaScript code.-->
+<script type="text/javascript">
 
-<body>
-	<div class="container">
-		<p>
-			Cragworks
-		</p>
-		</br>
-		<p><img src="http://i.imgur.com/yF7JUEO.png"></p>
-		<p><img src="http://i.imgur.com/qFhBUSZ.png"></p>
+	// This code specifies the rendering resolution.
+	// Set the resolution to 720p in the Dashboard project settings.
+	var GP_WIDTH = 854, GP_HEIGHT = 480,
+		TV_WIDTH = 1280, TV_HEIGHT = 720;
 
-		<a href="https://www.youtube.com/watch?v=lqGVEMlIDKs">
-		<img src="http://i.imgur.com/WLZv2Xc.png"></a>
-		<a href="https://www.youtube.com/watch?v=asJINOlozcU">
-		<img src="http://i.imgur.com/UX1u2Hf.png"></a>
+	// This code declares the canvas and rendering context variables.
+	var gpCanvas, gpContext, tvCanvas, tvContext;
+	initGPContext();
+	// This code is the position touched on the touch panel.
+	//var touchX = GP_WIDTH / 2, touchY = GP_HEIGHT / 2;
 
-	<!--<hr>
-	<a href="https://itunes.apple.com/us/developer/cragworks/id926005518">iOS</a>-->
-	<hr>
-		<a href="http://youtube.com/cragworks"><img src="http://i.imgur.com/qgjjq77.png"></a>
-		<a href="https://miiverse.nintendo.net/users/Cragworks"><img width=49 height=43  src="http://i.imgur.com/fU9zlAR.png"></a>
+	//audio
+	/*var gamePad = nwf.input.WiiUGamePad.getController();
+	var audioContext  = new webkitAudioContext(); // audio context
+	var audioDeviceGamePad = audioContext.createOutputDeviceNode(gamePad.name);
+    		audioDeviceGamePad.connect( audioContext.destination );
+            audioDeviceGamePad.gain.value = 1.8;
+
+    //gamepad buttons
+    var ControllerEvent = nwf.events.ControllerEvent,
+		NWFButton = nwf.input.ControllerButton, ButtonControlEvent = nwf.events.ButtonControlEvent;
+    gp = nwf.input.WiiUGamePad.getController();
 		
-		<p>email: calvin@cragworks.com</p>
-	<hr>
-	programming: calvin tham, music: perry burkum, art: skyler foxx; logo: satch
-	</div>
-</body>
+		gp.addEventListener(ControllerEvent.CONTROLLER_CONNECTED, gpAdded, self);
+		gp.addEventListener(ControllerEvent.CONTROLLER_DISCONNECTED, gpRemoved, self);
+		gp.addEventListener(ControllerEvent.BATTERY_LEVEL_CHANGE, gpBatteryChanged, self);
+		
+		gp.buttons.addEventListener(ButtonControlEvent.PRESS, onGamePadButtonPress, self);
+		gp.buttons.addEventListener(ButtonControlEvent.RELEASE, onGamePadButtonRelease, self);
+	
+	// Get instance from GamePad Controller
+	var gpGyro = gamePad.gyroscope;
+	var angleX = gpGyro.angleX;
+	var angleZ = gpGyro.angleZ;
+	var prevAngleX = gpGyro.angleX;
+	var prevAngleZ = gpGyro.angleZ;
+	var restAngleX = gpGyro.angleX;
+	var restAngleZ = gpGyro.angleZ;
 
+		gpGyro.addEventListener(nwf.events.GyroscopeControlEvent.CALIBRATION_SUCCESS, gyroCalibrationSuccess, self);
+		gpGyro.addEventListener(nwf.events.GyroscopeControlEvent.CALIBRATION_FAIL, gyroCalibrationFailed, self);
+	function gyroCalibrationFailed(evt) {
+		console.log('calibrate failed');
+		alert("FAILURE: Could not calibrate tilting.")
+	}
+	function gyroCalibrationSuccess(evt) {
+		console.log('calibrate success');
+		alert("SUCCESS: Calibration complete for tilting!")
+	}
+
+	function updateGpGyroAngles()
+	{
+		var deltaX = gpGyro.angleX-prevAngleX;
+		var deltaZ = gpGyro.angleZ-prevAngleZ;
+
+		if(Math.abs(deltaX) > 0.001)
+			angleX +=deltaX;
+		if(Math.abs(deltaZ) > 0.001)
+			angleZ += deltaZ;
+
+		prevAngleX = gpGyro.angleX;
+		prevAngleZ = gpGyro.angleZ;
+	}
+
+	function gpGyroTiltedUp()
+	{
+		if(angleX > restAngleX+1)
+			return true;
+		
+		return false;
+	}
+	function gpGyroTiltedDown()
+	{
+		if(angleX < restAngleX-0.5)
+			return true;
+		
+		return false;
+	}
+	function gpGyroTiltedLeft()
+	{
+		if(angleZ < restAngleZ-0.8)
+			return true;
+		
+		return false;
+	}
+	function gpGyroTiltedRight()
+	{
+		if(angleZ > restAngleZ+0.8)
+			return true;
+		
+		return false;
+	}
+	function gpGyroRotatedRateUp() {
+	if(gpGyro.rotationRateX > 6)
+			return true;
+		
+		return false;
+	}
+
+	function gpGyroRotatedRateDown() {
+		if(gpGyro.rotationRateX < -6)
+			return true;
+		
+		return false;
+	}
+
+	function gpGyroRotatedRateLeft() {
+		if(gpGyro.rotationRateY < -1)
+			return true;
+		
+		return false;
+	}
+
+	function gpGyroRotatedRateRight() {
+		if(gpGyro.rotationRateY > 1)
+			return true;
+		
+		return false;
+	}*/
+	var dropDirection = 0;//0 up 1 down 2 left 3 right
+
+	function gpAdded(evt) {
+		console.log('[gpAdded] The system error will disappear');
+	}
+	
+	function gpRemoved(evt) {
+		console.log('[gpRemoved] A system error will appear');
+	}
+	
+	function gpBatteryChanged(evt) {
+		console.log('[gpBatteryChanged] '+evt.target.name+': '+evt.target.batteryLevel+' (max: 4)');
+	}
+	
+	function activateDropPiecesUp(){
+		if(state==1) return;
+		state = 1;
+      	dropDirection = 0;
+      	msecDropDirection = 75;
+      	playFallSound();
+	}
+
+	function activateDropPiecesDown(){
+		if(state==1) return;
+		state = 1;
+      	dropDirection = 1;
+      	msecDropDirection = 50;
+      	playFallSound();
+	}
+
+	function activateDropPiecesLeft(){
+		if(state==1) return;
+		state = 1;
+      	dropDirection = 2;
+      	msecDropDirection = 50;
+      	playFallSound();
+	}
+
+	function activateDropPiecesRight(){
+		if(state==1) return;
+		state = 1;
+      	dropDirection = 3;
+      	msecDropDirection = 50;
+      	playFallSound();
+	}
+
+	function stopAudioManager()
+	{
+		audioManager.stop();
+      	bgmMusicIsOn=false;
+	}
+
+	var msecDropDirection = 0;
+
+	function stopPlayingIntro()
+	{
+		if(videoToPlay==3)
+		{
+			videoToPlay = -1;
+			videoIntro.pause();
+			videoIntro.currentTime = 0;
+			videoIntro.load();
+			videoToPlay=-1;
+		}
+	}
+	function onGamePadButtonPress(evt) {
+
+		//stop playing the intro when pressed a button
+		stopPlayingIntro();		
+
+		//changeBg();
+		//clearBoard();
+		//setBeginning4Pieces();
+		//setDefaultRectBoard();
+		if(evt.button == nwf.input.ControllerButton.GAMEPAD_UP)
+		{
+			window.focus();
+			activateDropPiecesUp();
+      	}
+      	if(evt.button == nwf.input.ControllerButton.GAMEPAD_DOWN)
+		{
+			activateDropPiecesDown();
+      	}
+      	if(evt.button == nwf.input.ControllerButton.GAMEPAD_LEFT)
+		{
+			activateDropPiecesLeft();
+      	}
+      	if(evt.button == nwf.input.ControllerButton.GAMEPAD_RIGHT)
+		{
+			activateDropPiecesRight();
+      	}
+      	if(evt.button == nwf.input.ControllerButton.GAMEPAD_R)
+		{
+			redBgOn = !redBgOn;
+
+			if(bgmMusicIsOn)
+			{
+      			stopAudioManager();
+	       		playBgm();
+      		}
+
+      		//randomlyInsertPieceRightToLeft();
+      	}
+		if(evt.button == nwf.input.ControllerButton.GAMEPAD_X)
+		{
+			if(motionControlOn) 
+			{
+				motionControlOn = false;
+      			alert("OFF: Tilting the Gamepad does not reset board. Use the d-pad to reset the board.")
+			}
+			else 
+			{
+				motionControlOn = true;
+      			alert("ON: Tilting the Gamepad resets the board.")
+			}
+
+      		playPlaceSound();
+      	}
+      	if(evt.button == nwf.input.ControllerButton.GAMEPAD_B)
+      	{
+      		if(bgmMusicIsOn)
+      		{
+      			stopAudioManager();
+      		alert("OFF: Music");
+      		}
+      		else
+      		{
+	        	playBgm();
+      		alert("ON: Music");
+	        }
+      		playPlaceSound();
+      	}
+      	if(evt.button == nwf.input.ControllerButton.GAMEPAD_Y)
+      	{
+      		playPlaceSound();
+      	}
+		if(evt.button == nwf.input.ControllerButton.GAMEPAD_A)
+      	{
+      		if(isShowingAvailableMoves)
+      		{
+      			isShowingAvailableMoves = false;
+      			alert("OFF: Not showing possible moves.")
+      		}
+      		else
+      		{
+      			isShowingAvailableMoves = true;
+      			alert("ON: Showing possible moves.")
+      		}
+      		playPlaceSound();
+      	}
+      	if(evt.button == nwf.input.ControllerButton.GAMEPAD_PLUS)
+      	{
+      		if(isShowingInstructions)
+				isShowingInstructions = false;
+			else
+				isShowingInstructions = true;
+
+      		playPlaceSound();
+      		alertCredits();
+      	}
+      	if(evt.button == nwf.input.ControllerButton.GAMEPAD_MINUS)
+      	{
+			calibrate();
+      		playPlaceSound();
+      		gameMode++;
+      		if(gameMode==3)
+      			gameMode=0;
+      		//drawText("CALIBRATED", 854/10, 480-30)
+      		//videoToPlay = 3;
+			//playReversi32Intro();
+      	}
+	}
+
+	function playBgm()
+	{
+		if(gameMode==0)
+      	  audioManager.playSound(bgmTitle, 'gamepad', 0, 0, true);
+		else if(redBgOn)
+      	  audioManager.playSound(bgmItems, 'gamepad', 0, 0, true);
+      	else if(!redBgOn)
+      	  audioManager.playSound(bgmMusic, 'gamepad', 0, 0, true);
+
+      	bgmMusicIsOn=true;
+	}
+	
+	function onGamePadButtonRelease(evt) {
+	}
+
+	// initialize audio manager
+	var bgmMusicIsOn;
+    var bgmMusic;
+    var bgmItems;
+    var placedSfx;
+    var placedSfx2;
+    var pieceFallSfx;
+    var pieceFlipSfx;
+    var pieceFlipSfx2;
+    var squeekSfx;
+    var screamSfx;
+    var congradulationsSfx;
+    var bgmTitle;
+
+   /* var audioManager = new WebAudioManager(
+                // default audio context
+                audioContext,
+                // list of sounds to load
+                [
+	                    'sfx/pieces_flipping6.ogg',
+	                    'sfx/main_theme.ogg',
+	                    'sfx/marble_fall.ogg',
+	                    'sfx/items_mode.ogg',
+	                    'sfx/win.ogg',
+	                    'sfx/squeek.ogg',
+	                    '',
+	                    'sfx/placed3.ogg',
+	                    'sfx/placed2.ogg',
+	                    'sfx/pieces_flipping7.ogg',
+	                    '',
+	                    '',
+	                    'sfx/scream.ogg',
+	                    'sfx/congradulations.ogg',
+	                    'sfx/title_music.ogg'
+                ],
+                // callback when sounds are loaded and decoded
+                function(bufferList) {
+					drawInstructions();
+                    // store buffers for later use.
+                    bgmMusic = bufferList[1];
+
+                    placedSfx = bufferList[7];
+                    placedSfx2 = bufferList[7];
+                    pieceFallSfx = bufferList[2];
+                    pieceFlipSfx = bufferList[0];
+                    winSfx = bufferList[4];
+                    squeekSfx = bufferList[5];
+                    pieceFlipSfx2 = bufferList[9];
+                    screamSfx = bufferList[12];
+                    congradulationsSfx = bufferList[13];
+                    bgmItems = bufferList[3];
+                    bgmTitle = bufferList[14];
+
+					
+
+                    console.log('Othello U sounds loaded and buffers created - lets Play!');
+                }
+            ).load();
+
+            // set audio devices
+            //BlastOff.audioManager.setTVAudioDevice(audioDeviceTV);
+            audioManager.setGamePadAudioDevice(audioDeviceGamePad);
+*/
+
+    function drawText(text, x, y)
+    {
+		 gpContext.font = 'italic 25pt Times Roman';
+   		 gpContext.fillText(text, x, y);
+    }
+
+   	//Display "Loading" in the console while assets are being loaded
+    function loadHandler() {
+   		 console.log("Loading...");
+   		 gpContext.fillRect(0,0,gpContext.width,gpContext.height);
+ 		 gpContext.font = 'italic 25pt Times Roman';
+   		 var loadY = 0;
+   		if(assetsLoaded<10)
+   			loadY = 100;
+   		else if(assetsLoaded<20) 	
+   			loadY = 200;
+   		else if(assetsLoaded<30) 
+   			loadY = 300;		 
+		gpContext.drawImage(assetsToLoad[assetsLoaded], (assetsLoaded*GP_WIDTH/10) % 854, loadY, 100,100);
+   		assetsLoaded++;
+   		 //If everthing is loaded, do this:
+   		 if (assetsLoaded === assetsToLoad.length) {
+   		   //Make the game play, possibly by changing its state from "loading" to "playing"
+   		   console.log("All assets loaded");
+   		   //alert("DONE LOADING");
+           startLevel();
+    	}
+	}
+
+    function startLevel()
+    {
+    	gameMode=0;
+    	redBgOn = !redBgOn;
+        //audioManager.playSound(bgmMusic, 'gamepad', 0, 0, true);
+        clearInterval(interval); //remove loading flashing
+        //uncomment playBgm();
+        bgmMusicIsOn=true;
+		window.webkitRequestAnimationFrame(mainLoop);
+        playReversi32Intro();
+    }
+
+	// This code is the initialization performed after index.html is loaded on the GamePad.
+
+	function initGPContext()
+	{
+		// Initialize the canvas for displaying the Gamepad and the rendering context.
+		gpCanvas = window.document.getElementById("gpCanvas");
+		gpCanvas.width = GP_WIDTH;
+		gpCanvas.height = GP_HEIGHT;
+		gpContext = gpCanvas.getContext("2d", {antialias: '2x'});
+  		gpContext.font = 'italic 20pt Times Roman';
+
+  		if(gpContext.fillStyle === "rgb(0,0,0)")
+			gpContext.fillStyle = "rgb(255,255,255)";
+		else
+			gpContext.fillStyle = "rgb(0,0,0)";
+
+  	 	gpContext.fillText('MUSIC LOADING', 50, 450);
+  	 	gpContext.fillText('Place the Wii U GamePad on a Flat Surface for calibration!', 50, 400);
+	}
+
+	//flashing "MUSIC LOADING"
+		var timeL = 1;
+		var interval = setInterval(function() { 
+		      timeL++;
+
+		      if(timeL%2==0)
+				gpContext.fillStyle = "rgb(255,255,255)";
+			  else
+				gpContext.fillStyle = "rgb(0,0,0)";
+
+		   if (assetsLoaded < assetsToLoad.length) {
+  	 			gpContext.fillText('GRAPHICS LOADING', 50, 450);
+		   }
+		   else
+		   {
+		   		gpContext.fillText('MUSIC LOADING', 50, 450);
+		   }
+		   // else { 
+		   //    clearInterval(interval);
+		   // }
+		}, 500);
+	//END OF FLASHING "MUSIC LOADING"
+
+	window.addEventListener("load", function () {
+		
+		//initGPContext();
+
+		// This code acquires the position touched on the touch panel.
+		gpCanvas.addEventListener("mousemove", function (e) {
+			touchX = e.clientX;
+			touchY = e.clientY;
+		});
+
+		// This code acquires the TV from NWF.
+		//var tv = nwf.display.DisplayManager.getInstance().getTVDisplay();
+
+		//This code records the process that runs after TV.html is loaded to the TV.
+		// tv.addEventListener("load", function () {
+
+		// 	//Initialize the TV canvas and rendering context.
+		// 	tvCanvas = tv.window.document.getElementById("tvCanvas");
+		// 	//tvCanvas = gpCanvas;
+		// 	tvCanvas.width = TV_WIDTH;
+		// 	tvCanvas.height = TV_HEIGHT;
+		// 	tvContext = tvCanvas.getContext("2d");
+		// 	//tvContext = gpContext;
+
+		// 	//This code starts the main loop.
+		// 	window.webkitRequestAnimationFrame(mainLoop);
+		// });
+
+		// //This code loads TV.html to the TV.
+		// tv.load("TV.html");
+	});
+
+	//touch screen
+	/*var gpTouchPanel = gamePad.touchPanel;
+
+	// EVENTS
+	gpTouchPanel.addEventListener(nwf.events.TouchControlEvent.UPDATE, onTouch, this);
+	gpTouchPanel.addEventListener(nwf.events.TouchControlEvent.TOUCH_END, onTouchEnd, this);
+	gpTouchPanel.addEventListener(nwf.events.TouchControlEvent.TOUCH_START, onTouchStart, this);
+*/
+	var touchX = 0;
+	var touchY = 0;
+	var touched = 0; // 0 not touched, 1 touch start, 2 moving
+
+	function titleTouchStart(evt) {
+		var posx = startbtn_rect.x;
+		var posy = startbtn_rect.y;
+		var endx = startbtn_rect.x + startbtn_rect.width;
+		var endy = startbtn_rect.y + startbtn_rect.height;
+  		
+  		if(videoToPlay==3)
+  			stopPlayingIntro();
+  		else
+			if( (touchX>posx && touchY>posy) && (touchX<endx && touchY<endy) ) {
+				//uncomment audioManager.playSound(placedSfx, 'gamepad');
+  				nextMode();
+  			}
+	}
+
+	function menuTouchStart(evt) {
+		var posx = menu1p_rect.x;
+		var posy = menu1p_rect.y;
+		var endx = menu1p_rect.x + menu1p_rect.width;
+		var endy = menu1p_rect.y + menu1p_rect.height;
+
+		if( (touchX>posx && touchY>posy) && (touchX<endx && touchY<endy) ) {
+			//uncomment audioManager.playSound(placedSfx, 'gamepad');
+  			nextMode();
+			redBgOn = true;
+  		}
+  		posx = menu2p_rect.x;
+		posy = menu2p_rect.y;
+		endx = menu2p_rect.x + menu2p_rect.width;
+		endy = menu2p_rect.y + menu2p_rect.height;
+		
+		if( (touchX>posx && touchY>posy) && (touchX<endx && touchY<endy) ) {
+			//uncomment audioManager.playSound(placedSfx, 'gamepad');
+  			nextMode();
+			redBgOn = false;
+  		}
+	}
+
+	gpCanvas.onmousedown=onTouchStart;
+
+	function onTouchStart(evt) {
+	 	touched = 1;
+		touchX = evt.clientX;
+		touchY = evt.clientY;
+		// touchX = evt.touchX/3950.0 * 854;
+		// touchY = evt.touchY/3900.0 * 480;
+		console.log(touchX);
+		console.log(touchY);
+		var startingX = -rLen/2;
+
+		var r = parseInt(4 * touchY/GP_HEIGHT);
+		var c = parseInt(8 * ((touchX-startingX)/(GP_WIDTH + rLen)));
+		
+		if(gameMode==0)
+			titleTouchStart(evt);
+		else if(gameMode==1)
+			menuTouchStart(evt);
+		else if(gameMode==2)
+		{
+			if(gameOver)
+				confirmPlayAgain();
+			
+			addHalo(r, c);
+
+			//check for touching on the title screen
+
+			if(redBgOn && whosTurn==-1)
+				return;
+
+			if(whosTurn == 0)
+			{
+				if(checkFirstMoveSetWhosTurn(r,c))
+				{
+					if(!isFlipping && waitmsec==0)
+						waitmsec = 10;
+					nowPr[nowPrI] = 0;
+					if(nowPrI<numPr-1)
+						nowPrI++;
+					else
+						nowPrI=0;
+					insertBoardPieceAt(r, c);
+					switchTurn();
+	      		    playPlaceSound();
+	      		    bigleyInsertTime = time+50;
+				}
+
+			}
+			else if( canInsertBoardPieceAt(r,c) )
+			{
+				if(!isFlipping && waitmsec==0)
+					waitmsec = 10;
+				nowPr[nowPrI] = 0;
+				if(nowPrI<numPr-1)
+						nowPrI++;
+					else
+						nowPrI=0;
+				noMovesMsec = 0;
+				noMovesAvailable = false;
+				insertBoardPieceAt(r, c);
+				switchTurn();
+	      		playPlaceSound();
+	      		bigleyInsertTime = time+50;
+			}
+		}
+	}
+
+	function onTouch(evt) {
+		var gpCursorX = evt.touchX * 854; // touchXY is a normalized value, so we scale according to the screen we care about
+		var gpCursorY = evt.touchY * 480;
+
+		touched = 1;
+	}
+
+	function onTouchEnd(evt){
+		touched = 0;
+	}
+
+	function playPlaceSound()
+	{
+		// uncomment
+		// if(randFloat(0,1)>=0.5)
+		// 	audioManager.playSound(placedSfx, 'gamepad');
+		// else
+		// 	audioManager.playSound(placedSfx2, 'gamepad');
+	}
+
+	 // Get instances from GamePad Controller
+	 /*uncomment var gpLStick = nwf.input.WiiUGamePad.getController().leftStick;
+ 	 var gpRStick = nwf.input.WiiUGamePad.getController().rightStick;
+
+ 	// Add listeners for the move event to be fired from the controls
+ 	gpLStick.addEventListener( nwf.events.MovementControlEvent.MOVE, onMove, this );
+	 gpRStick.addEventListener( nwf.events.MovementControlEvent.MOVE, onMove, this );
+*/
+	 // Handler for the MovementControls move event
+ 	function onMove( evt ) {
+
+	 }
+
+	// This code is the main loop that is run every frame along with the page display update.
+	var numRows = 4;
+	var numCols = 8;
+	var board = new Array(numRows);
+	clearBoard();
+
+	var whosTurn = 0; //-1 white, 1 black, 0 no_one
+	var rLen = 120;
+	var pRad = 110;
+
+	var bgFillStyle = "rgb(0,173,202)";
+
+	//images
+	var assetsToLoad = [],
+    assetsLoaded = 0;
+
+	var background = new Image();
+	var blackPiece = new Image();
+	var whitePiece = new Image();
+	var crown = new Image();
+	var pass_black = new Image();
+	var pass_white = new Image();
+	var noMovesBlack = new Image();
+	var noMovesWhite = new Image();
+	var instructions = new Image();
+	var halo = new Image();
+	var halo_black = new Image();
+	var circle_black = new Image();
+	var circle_white = new Image();
+	var reversi32 = new Image();
+
+	var tiltMe = new Image();
+	var blackPieceReg = new Image();
+	blackPieceReg = blackPiece;
+	var whitePieceReg = new Image();
+	whitePieceReg = whitePiece;
+	var bigleyFaceBlack = new Image();
+	var bigleyFaceWhite = new Image();
+	var bigleyFaceBlackBlink = new Image();
+	var bigleyFaceWhiteBlink = new Image();
+
+	//main menu
+	var menu1p = new Image();
+	var menu1p_press = new Image();
+	var menu1p_green = new Image();
+		var menuW = 300;
+		var menuH = 300;
+		var menuX = GP_WIDTH/8;
+		var menuY = GP_HEIGHT/2-menuH/2;
+	var menu1p_rect = new rect(menuX, menuY, menuW,menuH);
+
+	var menu2p = new Image();
+	var menu2p_press = new Image();
+	var menu2p_green = new Image();
+	var menu2p_rect = new rect(menuX+menuW*1.25, menuY, menuW,menuH);
+
+	//title
+	var title = new Image();
+	var startbtn = new Image();
+	var startbtn_rect = new rect(560,310,260,78);
+
+	var time = 0;
+
+	//var bgFillStyle = "rgb(11,244,0)";
+
+	//state
+	var state = 0; //0 normal 1 make tiles fall down 2 flipping
+	var isFlipping = false;
+	var msec = 0;
+	var waitmsec = 0;
+	//var waitmsec = new Array(numPr);//0 1 2 3 4 5 6 7
+	var isShowingAvailableMoves = true;
+	var motionControlOn = true;
+	var gameOver = false;
+	var winner = 0;
+	var numWhitePieces=0;
+	var numBlackPieces=0;
+	var isShowingInstructions = false;
+
+	var redBgOn = false;
+	var gameMode = 0; //0 = title, 1 = menu, 2 = cpu, 3 = 2p vs
+
+	loadImages();
+	function loadImages()
+	{
+		background.src = "images/background.png";
+					blackPiece.src = "images/black_piece.png";
+					whitePiece.src = "images/white_piece.png";
+					crown.src = "images/crown.png";
+					pass_black.src = "images/pass_black.png";
+					pass_white.src = "images/pass_white.png";
+					noMovesBlack.src = "images/no_moves_black.png";
+					noMovesWhite.src = "images/no_moves_white.png";
+					instructions.src = "images/options.png";
+					halo.src = "images/halo.png";
+					halo_black.src = "images/halo_black.png";
+					circle_black.src = "images/circle_black.png";
+					circle_white.src = "images/circle_white.png";
+					reversi32.src = "images/reversi_32.png";
+					tiltMe.src = "images/tilt_me.png";
+					bigleyFaceBlack.src = "images/bigley_face_black.png";
+					bigleyFaceWhite.src = "images/bigley_face_white.png";
+					bigleyFaceBlackBlink.src = "images/bigley_face_black_blink.png";
+					bigleyFaceWhiteBlink.src = "images/bigley_face_white_blink.png";
+
+					menu1p.src = "images/1p.png";
+					menu1p_press.src = "images/1p_press.png";
+					menu1p_green.src = "images/1p_green.png";
+
+					menu2p.src = "images/2p.png";
+					menu2p_press.src = "images/2p_press.png";
+					menu2p_green.src = "images/2p_green.png";
+
+					title.src = "images/title.png";
+					startbtn.src = "images/startbtn.png";
+
+					background.addEventListener("load", loadHandler, false);
+					blackPiece.addEventListener("load", loadHandler, false);
+					whitePiece.addEventListener("load", loadHandler, false);
+					crown.addEventListener("load", loadHandler, false);
+					pass_black.addEventListener("load", loadHandler, false);
+					pass_white.addEventListener("load", loadHandler, false);
+					noMovesBlack.addEventListener("load", loadHandler, false);
+					noMovesWhite.addEventListener("load", loadHandler, false);
+					instructions.addEventListener("load", loadHandler, false);
+					halo.addEventListener("load", loadHandler, false);
+					halo_black.addEventListener("load", loadHandler, false);
+					circle_black.addEventListener("load", loadHandler, false);
+					circle_white.addEventListener("load", loadHandler, false);
+					reversi32.addEventListener("load", loadHandler, false);
+					tiltMe.addEventListener("load", loadHandler, false);
+					bigleyFaceBlack.addEventListener("load", loadHandler, false);
+					bigleyFaceWhite.addEventListener("load", loadHandler, false);
+					bigleyFaceBlackBlink.addEventListener("load", loadHandler, false);
+					bigleyFaceWhiteBlink.addEventListener("load", loadHandler, false);
+					menu1p.addEventListener("load", loadHandler, false);
+					menu1p_press.addEventListener("load", loadHandler, false);
+					menu1p_green.addEventListener("load", loadHandler, false);
+					menu2p.addEventListener("load", loadHandler, false);
+					menu2p_press.addEventListener("load", loadHandler, false);
+					menu2p_green.addEventListener("load", loadHandler, false);
+					title.addEventListener("load", loadHandler, false);
+					startbtn.addEventListener("load", loadHandler, false);
+					//videoIntro.addEventListener('loadeddata', loadHandler, false);
+
+					assetsToLoad.push(background);
+					assetsToLoad.push(blackPiece);
+					assetsToLoad.push(whitePiece);
+					assetsToLoad.push(crown);
+					assetsToLoad.push(pass_black);
+					assetsToLoad.push(pass_white);
+					assetsToLoad.push(noMovesBlack);
+					assetsToLoad.push(noMovesWhite);
+					assetsToLoad.push(instructions);
+					assetsToLoad.push(halo);
+					assetsToLoad.push(halo_black);
+					assetsToLoad.push(circle_black);
+					assetsToLoad.push(circle_white);
+					assetsToLoad.push(reversi32);
+					assetsToLoad.push(tiltMe);
+					assetsToLoad.push(bigleyFaceBlack);
+					assetsToLoad.push(bigleyFaceWhite);
+					assetsToLoad.push(bigleyFaceBlackBlink);
+					assetsToLoad.push(bigleyFaceWhiteBlink);
+					assetsToLoad.push(menu1p);
+					assetsToLoad.push(menu1p_press);
+					assetsToLoad.push(menu1p_green);
+					assetsToLoad.push(menu2p);
+					assetsToLoad.push(menu2p_press);
+					assetsToLoad.push(menu2p_green);
+					assetsToLoad.push(title);
+					assetsToLoad.push(startbtn);
+					//assetsToLoad.push(videoIntro);
+	}
+
+	function setBeginning4Pieces()
+	{
+		board[1][3] = -1;
+		board[1][4] = 1;
+		board[2][3] = 1;
+		board[2][4] = -1;
+	}
+
+	function setTemplatePieces_U()
+	{
+		board[0][0] = -whosTurn;
+		board[0][1] = -whosTurn;
+		board[0][2] = whosTurn;
+		board[0][3] = 0;
+		board[0][4] = -whosTurn;
+		board[0][5] = whosTurn;
+		board[0][6] = -whosTurn;
+		board[0][7] = -whosTurn;
+
+		board[1][0] = -whosTurn;
+		board[1][1] = -whosTurn;
+		board[1][2] = whosTurn;
+		board[1][3] = 0;
+		board[1][4] = -whosTurn;
+		board[1][5] = -whosTurn;
+		board[1][6] = -whosTurn;
+		board[1][7] = -whosTurn;
+
+		board[2][0] = -whosTurn;
+		board[2][1] = -whosTurn;
+		board[2][2] = whosTurn;
+		board[2][3] = -whosTurn;
+		board[2][4] = -whosTurn;
+		board[2][5] = -whosTurn;
+		board[2][6] = -whosTurn;
+		board[2][7] = -whosTurn;
+
+		board[3][0] = -whosTurn;
+		board[3][1] = -whosTurn;
+		board[3][2] = whosTurn;
+		board[3][3] = -whosTurn;
+		board[3][4] = -whosTurn;
+		board[3][5] = 0;
+		board[3][6] = -whosTurn;
+		board[3][7] = -whosTurn;
+	}
+
+	function clearBoard()
+	{
+		for(var i = 0; i < numRows; i++)
+		{
+			board[i] = new Array(numCols);
+
+			for(var j = 0; j < numCols; j++)
+				board[i][j] = 0;
+		}
+	}
+
+	function alertCredits()
+	{
+		alert("CREDITS\nPROGRAMMER/DIRECTOR: CALVIN THAM\n MUSIC COMPOSER: PERRY BURKUM\n GRAPHIC DESIGNER/MOVIE ANIMATOR: SKYLER FOXX\n CRAGWORKS LOGO: SATCH+SKYLER\n REVERSI 32 LOGO: GRAHAM BURKUM (AWFUL CREATIVE)");
+	}
+
+	function reset()
+	{
+		whosTurn = 0;
+      	gameOver=false;
+      	winner=0;
+      	numWhitePieces=2;
+      	numBlackPieces=2;
+      	state=0;
+      	noMovesAvailable=false;
+      	clearBoard();
+      	setBeginning4Pieces();
+      	setDefaultRectBoard();
+	}
+
+	function calibrate()
+	{
+      	gpGyro.calibrate();
+      	restAngleX = gpGyro.angleX;
+      	restAngleZ = gpGyro.angleZ;
+      	prevAngleX = gpGyro.angleX;
+      	prevAngleZ = gpGyro.angleZ;
+      	angleX = gpGyro.angleX;
+      	angleZ = gpGyro.angleZ;
+	}
+
+	function drawBlueBoard()
+	{
+		var color = "rgb(0,0,0)";
+		gpContext.fillStyle = color;
+		gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
+	}
+
+	function drawBackground()
+	{
+		gpContext.drawImage(background, 0, 0, GP_WIDTH, GP_HEIGHT);
+	}
+
+	function drawInstructions()
+	{
+		if(isShowingInstructions)
+			gpContext.drawImage(instructions, 0, 0, GP_WIDTH, GP_HEIGHT);
+	}
+
+	function randFloat(min, max)
+	{
+    	var num =  Math.random()*max + min;
+		return num;
+	}
+
+	function randFloatN(min, max)
+	{
+    	var num =  Math.random()*max + min;
+		num *= Math.floor(Math.random()*2) == 1 ? 1 : -1; // this will add minus sign in 50% of cases
+		return num;
+	}
+
+	//rect x y width height
+	function rect(x, y, width, height) {
+ 		 this.x = x;
+ 		 this.y = y;
+ 		 this.width = width;
+  		 this.height = height;
+  		 this.xVel = 0;
+  		 this.xAcc = randFloatN(0,1);
+  		 this.xMaxVel = this.xAcc*3;
+  		 this.yVel = 0;
+  		 this.yAcc = randFloat(3,9);
+  		 this.yMaxVel = randFloat(10,25);
+  		//  if(y < GP_HEIGHT/3 && randFloat(0,1)>0.5)
+  		// 	 this.waitDropSec = randFloat(0, 20);
+  		// else
+  			 this.waitDropSec = 0;
+
+  		 this.flipToZero = false;
+  		 this.flipPr = -1; //0 to 32 because 4 x 8 this is which flips first
+  		 this.haloSec = 0;
+  		 this.haloMax = 20;
+  		 this.fadeToZero = false;
+	}
+
+	var rectBoard = new Array(numRows);
+	setDefaultRectBoard();
+	setBeginning4Pieces();
+	function setDefaultRectBoard()
+	{
+		var centerDif = (rLen - pRad)/2;
+		var startingX = -rLen/2;
+
+		for (var r = 0; r < numRows; r++)
+		{
+			rectBoard[r] = new Array(numCols);
+
+			for(var c = 0; c < numCols; c++)
+			{
+				var x = startingX + c * rLen + centerDif;
+				var y = r * rLen + centerDif;
+				var width = pRad;
+				var height = pRad;
+				rectBoard[r][c] = new rect(x,y,width,height);
+			}
+		}
+	}
+
+
+
+	function switchTurn()
+	{
+		if(whosTurn == -1)
+			whosTurn = 1;
+		else if(whosTurn == 1)
+			whosTurn = -1;
+	}
+
+	function drawBoardPiece(r, c)
+	{
+		var centerDif = (rLen - pRad)/2;
+		if( board[r][c] == -1)
+		{
+			if(rectBoard[r][c].flipToZero)
+				gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+			else
+				gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+		}
+		else if( board[r][c] == 1)
+		{
+			if(rectBoard[r][c].flipToZero)
+				gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+			else
+				gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+		}
+
+		if((board[r][c]!=0 && gameOver==true && board[r][c]==winner && rectBoard[r][c].flipPr==-1) || winner==2 && numBlackPieces>5){ 
+			drawCrown(r, c);
+
+			if(!redBgOn)
+			{
+				if(winner==1)
+					alertBlackWins();
+				else if(winner==-1)
+					alertWhiteWins();
+				else
+					alertTie();
+			}
+		}
+		if(redBgOn && board[r][c]!=0) 
+			drawBigleyFace(r, c, board[r][c]*-1);
+	}
+
+	function drawBigleyFace(r, c, color)
+	{
+		gpContext.save();
+		gpContext.translate(rectBoard[r][c].x+rectBoard[r][c].width/2, rectBoard[r][c].y+rectBoard[r][c].height/2);
+		gpContext.rotate((r*30+c*60)*Math.PI/180);
+
+		var num = time%(100);
+
+		//gpContext.drawImage(crown, rectBoard[r][c].x+rectBoard[r][c].width/4, rectBoard[r][c].y+rectBoard[r][c].height/3.5,rectBoard[r][c].width/2,rectBoard[r][c].height/4);
+
+		if(color==1&&rectBoard[r][c].flipToZero==false || color==-1&&rectBoard[r][c].flipToZero==true)
+		{
+			if(num>95) gpContext.drawImage(bigleyFaceBlackBlink, -rectBoard[r][c].width/2,-rectBoard[r][c].height/2,rectBoard[r][c].width,rectBoard[r][c].height);
+			else gpContext.drawImage(bigleyFaceBlack, -rectBoard[r][c].width/2,-rectBoard[r][c].height/2,rectBoard[r][c].width,rectBoard[r][c].height);
+		}
+		
+		gpContext.restore();
+		if(color==-1&&rectBoard[r][c].flipToZero==false || color==1&&rectBoard[r][c].flipToZero==true)
+		{
+			if(-rectBoard[r][c].height/2>0)
+				gpContext.drawImage(blackPiece, -rectBoard[r][c].width/2,-rectBoard[r][c].height/2,rectBoard[r][c].width,rectBoard[r][c].height);
+		}
+	}
+
+	function drawCrown(r, c)
+	{
+		gpContext.save();
+		if(redBgOn)
+			gpContext.globalAlpha = 1;
+		gpContext.translate(rectBoard[r][c].x+rectBoard[r][c].width/4+rectBoard[r][c].width/4, rectBoard[r][c].y+rectBoard[r][c].height/3+rectBoard[r][c].height/8);
+		gpContext.rotate((r*30+c*15*(numWhitePieces+1))*Math.PI/180);
+		//gpContext.drawImage(crown, rectBoard[r][c].x+rectBoard[r][c].width/4, rectBoard[r][c].y+rectBoard[r][c].height/3.5,rectBoard[r][c].width/2,rectBoard[r][c].height/4);
+		gpContext.drawImage(crown, -rectBoard[r][c].width/4,-rectBoard[r][c].height/8,rectBoard[r][c].width/2,rectBoard[r][c].height/4);
+		gpContext.restore();
+	}
+
+	function drawPass(r, c, color)
+	{
+		gpContext.save();
+		gpContext.translate(rectBoard[r][c].x+rectBoard[r][c].width/4+rectBoard[r][c].width/4, rectBoard[r][c].y+rectBoard[r][c].height/3+rectBoard[r][c].height/8);
+		gpContext.rotate((r*30+c*15*(numWhitePieces+1))*Math.PI/180);
+		//gpContext.drawImage(crown, rectBoard[r][c].x+rectBoard[r][c].width/4, rectBoard[r][c].y+rectBoard[r][c].height/3.5,rectBoard[r][c].width/2,rectBoard[r][c].height/4);
+
+		if(color==1)
+			gpContext.drawImage(pass_white, -rectBoard[r][c].width/4,-rectBoard[r][c].height/8,rectBoard[r][c].width/2,rectBoard[r][c].height/4);
+		else
+			gpContext.drawImage(pass_black, -rectBoard[r][c].width/4,-rectBoard[r][c].height/8,rectBoard[r][c].width/2,rectBoard[r][c].height/4);
+		gpContext.restore();
+	}
+
+	function drawHaloForBeginningMove(r, c)
+	{
+		if(r==0&&c==4 || r==1&&c==5 || r==3&&c==3 || r==2&&c==2)
+			drawHalo(r, c, -1);
+		else
+			drawHalo(r, c, 1);
+	}
+
+	function drawBoardPieces()
+	{
+		for(var r = 0; r < numRows; r++)
+		{
+			for(var c = 0; c < numCols; c++)
+			{
+				if(state!=1 && board[r][c]==0)
+				{
+					if(whosTurn!=0)
+						drawHalo(r, c, whosTurn);
+					else
+					{
+						drawHaloForBeginningMove(r, c);
+					}
+				}
+				if(board[r][c]!=0 && state!=1) //drop shadow
+				{
+					drawShadowHalo(r,c,1);
+				}
+				drawBoardPiece(r, c);
+			}
+		}
+	}
+
+	function drawTitleSquare(r, c)
+	{
+		var centerDif = (rLen - pRad)/2;
+		var startingX = -rLen/2;
+		var rectBoardWidth = pRad+10;
+		var x = startingX + c * rLen + centerDif;
+		var y = r * rLen + centerDif;
+		gpContext.drawImage(tiltMe, x, y-5,rectBoardWidth, rectBoardWidth);
+	}
+
+	function drawTitle()
+	{
+		if(!redBgOn)
+			return;
+			for(var r = 0; r < numRows; r++)
+			{
+				for(var c = 0; c < numCols; c++)
+				{
+					drawTitleSquare(r, c);
+				}
+			}
+	}
+
+	function drawLinesOnBoard()
+	{
+		gpContext.beginPath();
+		gpContext.lineWidth="3.25";
+		gpContext.strokeStyle = "black";
+
+		startingX = -rLen/2;
+		for(r = 0; r < numRows; r++)
+		{
+			for(c = 0; c < numCols; c++)
+			{
+				gpContext.rect(startingX + c * rLen, r * rLen, rLen, rLen);
+
+			}
+		}
+		gpContext.stroke();
+		gpContext.closePath();
+	}
+
+	function changeBg()
+	{
+		if( bgFillStyle == "rgb(114,144,180)" ) 
+			bgFillStyle = "rgb(241,212,171)";
+		else if( bgFillStyle == "rgb(241,212,171)") 
+			bgFillStyle = "rgb(0,173,202)";
+		else if( bgFillStyle == "rgb(0,173,202)") 
+			bgFillStyle = "rgb(114,144,180)";
+	}
+
+	function dropPieceRandomlyLeftOrRight(r, c)
+	{
+		rectBoard[r][c].x+=rectBoard[r][c].xVel;
+
+		//make randomly move left and right a little
+		if(rectBoard[r][c].xMaxVel > 0 && rectBoard[r][c].xVel < rectBoard[r][c].xMaxVel)
+			rectBoard[r][c].xVel+=rectBoard[r][c].xAcc;
+		else if(rectBoard[r][c].xMaxVel < 0 && rectBoard[r][c].xVel > rectBoard[r][c].xMaxVel)
+			rectBoard[r][c].xVel+=rectBoard[r][c].xAcc;
+	}
+
+	function dropPieceRandomlyUpOrDown(r, c)
+	{
+		rectBoard[r][c].y+=rectBoard[r][c].xVel;
+
+		//make randomly move left and right a little
+		if(rectBoard[r][c].xMaxVel > 0 && rectBoard[r][c].xVel < rectBoard[r][c].xMaxVel)
+			rectBoard[r][c].xVel+=rectBoard[r][c].xAcc;
+		else if(rectBoard[r][c].xMaxVel < 0 && rectBoard[r][c].xVel > rectBoard[r][c].xMaxVel)
+			rectBoard[r][c].xVel+=rectBoard[r][c].xAcc;
+	}
+
+	function dropPieceUp(r, c)
+	{
+		if(msecDropDirection > 0 && dropDirection == 0 )
+		{
+			dropPieceDown(r, c);
+			msecDropDirection--;
+		}
+		else
+		{
+			rectBoard[r][c].y+=rectBoard[r][c].yVel;
+			if(rectBoard[r][c].yVel > -rectBoard[r][c].yMaxVel)
+				rectBoard[r][c].yVel-=rectBoard[r][c].yAcc;
+
+			//make randomly move left and right a little
+			dropPieceRandomlyLeftOrRight(r, c);
+		}
+	}
+
+	function dropPieceDown(r, c)
+	{
+		if(msecDropDirection > 0 && dropDirection == 1 )
+		{
+			dropPieceUp(r, c);
+			msecDropDirection--;
+		}
+		else
+		{
+			rectBoard[r][c].y+=rectBoard[r][c].yVel;
+			if(rectBoard[r][c].yVel < rectBoard[r][c].yMaxVel)
+				rectBoard[r][c].yVel+=rectBoard[r][c].yAcc;
+
+			dropPieceRandomlyLeftOrRight(r, c);
+		}
+	}
+
+	function dropPieceLeft(r, c)
+	{	
+		if(msecDropDirection > 0 && dropDirection == 2 )
+		{
+			dropPieceRight(r, c);
+			msecDropDirection--;
+		}
+		else
+		{
+			rectBoard[r][c].x+=rectBoard[r][c].yVel;
+			if(rectBoard[r][c].yVel > -rectBoard[r][c].yMaxVel)
+				rectBoard[r][c].yVel-=rectBoard[r][c].yAcc;
+
+			//make randomly move left and right a little
+			dropPieceRandomlyUpOrDown(r, c);
+		}
+	}
+
+	function dropPieceRight(r, c)
+	{	
+		if(msecDropDirection > 0 && dropDirection == 3 )
+		{
+			dropPieceLeft(r, c);
+			msecDropDirection--;
+		}
+		else
+		{
+			rectBoard[r][c].x+=rectBoard[r][c].yVel;
+			if(rectBoard[r][c].yVel < rectBoard[r][c].yMaxVel)
+				rectBoard[r][c].yVel+=rectBoard[r][c].yAcc;
+
+			//make randomly move left and right a little
+			dropPieceRandomlyUpOrDown(r, c);
+		}
+	}
+
+	function dropBoardPieces(direction) //0 up 1 down 2 left 3 right 
+	{
+		for (var r = 0; r < numRows; r++)
+		{
+			for(var c = 0; c < numCols; c++)
+			{
+				if(rectBoard[r][c].waitDropSec>0)
+					rectBoard[r][c].waitDropSec--;
+				else
+				{
+					switch( direction )
+					{
+						case 0:
+							dropPieceUp(r, c);
+							break;
+						case 1: 
+							dropPieceDown(r, c);
+							break;
+						case 2:
+							dropPieceLeft(r, c);
+							break;
+						case 3:
+							dropPieceRight(r, c);
+							break;
+					}
+				}
+			}
+		}
+	}
+	function playFallSound()
+	{
+		if(redBgOn)
+      		audioManager.playSound(screamSfx, 'gamepad');
+		else 
+      		audioManager.playSound(pieceFallSfx, 'gamepad');
+	}
+
+	function playFlipSound()
+	{
+		//uncomment
+		// if(randFloat(0,1)>=0.5)
+		// 	audioManager.playSound(pieceFlipSfx, 'gamepad', 0.01);
+		// else
+		// 	audioManager.playSound(pieceFlipSfx2, 'gamepad', 0.01);
+	}
+
+	//var nowPr = 0;
+	var numPr = 1;
+	var nowPr = new Array(numPr);//0 1 2 3 4 5 6 7
+	var nowPrI = 0;
+	function flipPieceToZeroSize(r, c, flipAmount)
+	{
+		if(rectBoard[r][c].width > 0)
+		{
+			rectBoard[r][c].width-=flipAmount;
+			rectBoard[r][c].x+=flipAmount/2;
+		}
+		else if(rectBoard[r][c].width <= 0)
+		{
+			rectBoard[r][c].flipToZero = false;
+      		playFlipSound();
+		}	
+	}
+
+	function flipPieceToNormalSize(r, c, flipAmount)
+	{
+		if(rectBoard[r][c].width < pRad)
+		{
+			rectBoard[r][c].width+=flipAmount;
+			rectBoard[r][c].x-=flipAmount/2;
+		}
+		else
+		{
+
+			var centerDif = (rLen - pRad)/2;
+			var startingX = -rLen/2;
+			rectBoard[r][c].width = pRad;
+			rectBoard[r][c].x = startingX + c * rLen + centerDif;
+			rectBoard[r][c].flipPr = -1;
+		}
+	}
+
+	function calcFlipAmount(i)
+	{
+		var flipAmount = pRad;
+		var divide = 2;
+		switch(nowPr[i])
+		{
+			case 0:
+				divide = 2.5;
+				break;
+			case 1:
+				divide = 2.25;
+				break;
+			case 2:
+				divide = 1.75;
+				break;
+			case 3:
+				divide = 1.5;
+				break;
+			case 4:
+				divide = 1.25;
+				break;
+			case 5:
+				divide = 1.0;
+				break;
+			case 6:
+				divide = .75;
+				break;
+			case 7:
+				divide = .5;
+				break;
+		}
+		flipAmount = flipAmount/divide;
+		return flipAmount;
+	}
+	function flipPiecesRect()
+	{
+		for(var i = 0; i < numPr; i++)
+		{
+		var startingX = -rLen/2;
+		//pRad/4
+		var flipAmount = calcFlipAmount(i);
+		var matchedAPr = false;
+
+		for (var r = 0; r < numRows; r++) 
+		{
+			for(var c = 0; c < numCols; c++) 
+			{
+				if(nowPr[i] == rectBoard[r][c].flipPr)
+				{
+					matchedAPr = true;
+					isFlipping = true;
+					if(rectBoard[r][c].flipToZero == true)
+					{
+						flipPieceToZeroSize(r, c, flipAmount);
+					}
+					else
+					{
+						flipPieceToNormalSize(r, c, flipAmount);
+					}
+				}
+			}
+		}
+		if(matchedAPr == false)
+		{
+			if(nowPr[i] < 8)
+				nowPr[i]++;
+			isFlipping = false;
+		}
+	}
+	}
+
+	function gpGyroRotationChecking()
+	{
+		if( gpGyroRotatedRateUp())
+			activateDropPiecesUp();
+		else if( gpGyroRotatedRateDown() )
+			activateDropPiecesDown();
+		else if( gpGyroRotatedRateLeft() )
+			activateDropPiecesLeft();
+		else if( gpGyroRotatedRateRight() )
+			activateDropPiecesRight();
+	}
+
+	function gpGyroTiltChecking()
+	{
+		//uncomment
+		// if( gpGyroTiltedUp())
+		// 	activateDropPiecesUp();
+		// else if( gpGyroTiltedDown() )
+		// 	activateDropPiecesDown();
+		// else if( gpGyroTiltedLeft() )
+		// 	activateDropPiecesLeft();
+		// else if( gpGyroTiltedRight() )
+		// 	activateDropPiecesRight();
+	}
+
+	function showAvailableMoves()
+	{
+		if(gameOver)
+			return;
+
+		var moves = getAvailableMovesArray();
+		
+		if(isShowingAvailableMoves)
+			drawAvailableMoves( moves );
+
+		//check if no moves available -> game over or show "Black Piece has No Moves"
+
+		if(whosTurn!=0 && moves==false)
+		{
+			switchTurn();
+			if(getAvailableMovesArray()==false)
+			{
+				tallyBoardPiecesAndWinner();
+				gameOver=true;
+				playWinSound();
+
+				//play bigley animations
+				if(redBgOn==true)
+				{
+					if(winner==-1)
+					{
+						videoToPlay = 0;
+					}
+					else if(winner==1)
+					{
+						videoToPlay = 1;
+					}
+					else
+						videoToPlay = 2; //tie
+				}
+			}
+			else
+				addNoMovesAvailable(100);
+		}
+	}
+
+	function playWinSound()
+	{
+		//uncomment
+		// if(redBgOn)
+  //      		audioManager.playSound(congradulationsSfx, 'gamepad', 0, 0, false);
+  //      	else
+	 //       	audioManager.playSound(winSfx, 'gamepad', 0, 0, false);
+	}
+
+	var videoToPlay = -1; //-1 0 1 2 3
+	
+	var video = document.createElement('video');
+		video.src = 'vid/bigley_win.mp4';
+		video.autoPlay = false;
+		video.load();
+		video.loop = false;
+
+	var video2 = document.createElement('video');
+		video2.src = 'vid/bigley_lose.mp4';
+		video2.autoPlay = false;
+		video2.load();
+		video2.loop = false;
+
+	var video3 = document.createElement('video');
+		video3.src = 'vid/bigley_tie.mp4';
+		video3.autoPlay = false;
+		video3.load();
+		video3.loop = false;
+
+	var videoIntro = document.createElement('video');
+		videoIntro.src = 'vid/reversi32intrologo.mp4';
+		videoIntro.autoPlay = false;
+		videoIntro.load();
+		videoIntro.loop = false;
+
+	function confirmPlayAgain()
+	{
+		if (confirm('Play Again?'))
+		{
+			reset();
+			gameMode=2;
+		}
+		else
+		{			
+			reset();
+			gameMode=0;
+		}
+	}
+
+	function alertBlackWins()
+	{
+		if(confirm("BLACK WINS! \n BLACK: "+numBlackPieces+"\n WHITE: "+numWhitePieces))
+		{
+			confirmPlayAgain();
+		}
+		else
+		{
+			confirmPlayAgain();
+		}
+	}
+
+	function alertWhiteWins()
+	{
+		if(confirm("WHITE WINS! \n WHITE: "+numWhitePieces+"\n BLACK: "+numBlackPieces))
+			{
+				confirmPlayAgain();
+			}
+			else
+			{
+				confirmPlayAgain();
+			}
+	}
+
+	function alertTie()
+	{
+		if(confirm("TIE! \n WHITE: "+numWhitePieces+"\n BLACK: "+numBlackPieces))
+			{
+				confirmPlayAgain();
+			}
+			else
+			{
+				confirmPlayAgain();
+			}
+	}
+
+	function playBigleyWin()
+	{
+		gpContext.drawImage(video,0,0);
+		
+		if(video.ended)
+		{
+			video.pause();
+			video.currentTime = 0;
+			video.load();
+			//video.pause();
+			videoToPlay=-1;
+			if(confirm("Bigley beat you! Better luck next time! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			{
+				confirmPlayAgain();
+			}
+			else
+			{
+				confirmPlayAgain();
+			}
+		}
+		else if(video.paused==true)
+			video.play();
+	}
+
+	function playBigleyLose()
+	{
+		gpContext.drawImage(video2, 0, 0);
+		
+		if(video2.ended)
+		{
+			video2.pause();
+			video2.currentTime = 0;
+			video2.load();
+			//video2.pause();
+			videoToPlay=-1;
+			if(confirm("You beat Bigley! You're quite good! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			{
+				confirmPlayAgain();
+			}
+			else
+			{
+				confirmPlayAgain();
+			}
+		}
+		else if(video2.paused==true)
+			video2.play();
+	}
+
+	function playBigleyTie()
+	{
+		gpContext.drawImage(video3, 0, 0);
+		
+		if(video3.ended)
+		{
+			video3.pause();
+			video3.currentTime = 0;
+			video3.load();
+			//video3.pause();
+			videoToPlay=-1;
+			if(confirm("Tied with Bigley! Rematch? \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			{
+				confirmPlayAgain();
+			}
+			else
+			{
+				confirmPlayAgain();
+			}
+		}
+		else if(video3.paused==true)
+			video3.play();
+	}
+	function playReversi32Intro()
+	{
+		videoToPlay = 3;
+		gpContext.drawImage(videoIntro,0,0,854,480);
+		
+		if(videoIntro.ended)
+		{
+			videoIntro.pause();
+			videoIntro.currentTime = 0;
+			videoIntro.load();
+			//video.pause();
+			videoToPlay=-1;
+		}
+		else if(videoIntro.paused==true)
+			videoIntro.play();
+	}
+
+	function videoPlayer()
+	{
+		if(videoToPlay!=-1)
+		{
+			switch(videoToPlay)
+			{
+				case 0:
+					playBigleyWin();
+					break;
+				case 1:
+					playBigleyLose();
+					break;
+				case 2:
+					playBigleyTie();
+					break;
+				case 3:
+					playReversi32Intro();
+					break;
+			}
+		}
+	}
+
+	function drawTitleScreen() {
+		//title
+		gpContext.drawImage(title, 0,0,GP_WIDTH,GP_HEIGHT);
+		gpContext.drawImage(startbtn, startbtn_rect.x, startbtn_rect.y,startbtn_rect.width,startbtn_rect.height);
+
+		//tiles up and down
+		var tWidth = 225;
+		//gpContext.drawImage(whitePiece, 50, 298, tWidth, tWidth);
+		//gpContext.drawImage(blackPiece, 200, 298, tWidth, tWidth);
+	}
+
+	function drawMenu() {
+		// //1p
+		// var menuW = 300;
+		// var menuH = 300;
+		// var menuX = GP_WIDTH/8;
+		// var menuY = GP_HEIGHT/2-menuH/2;
+		var dif = 1;
+
+		//background
+		var color = "rgb(255,255,255)";
+		gpContext.fillStyle = color;
+		gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
+
+		//1p
+		gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
+			//press
+			//gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
+			//green
+			//gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
+		//2p
+		gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
+			//press
+			//gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
+			//green
+			//gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
+	}
+
+	function getRandomInt(min, max) {
+	  min = Math.ceil(min);
+	  max = Math.floor(max);
+	  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+	}
+
+	var trans_type = 0; //0 1
+	var trans_total = -1;
+	var alpha = 0,          /// current alpha
+    delta = 0.08,        /// delta value = speed
+    img = new Image();  /// create image to draw
+
+    function doTransition()
+    {
+		if(trans_type==0) doTransitionFade();
+		else	doTransitionCheck();
+    }
+
+	function doTransitionFade()
+	{
+		if(trans_total==-1)
+			return;
+
+		alpha += delta;
+        //// if delta <=0 or >=1 then reverse
+       // if (alpha <= 0 || alpha >= 1) delta = -delta;
+        /// clear canvas
+        gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
+        /// set global alpha
+        gpContext.globalAlpha = alpha;
+        /// re-draw image
+        gpContext.drawImage(img, 0, 0);
+
+		var color = "rgb(255,255,255)";
+		gpContext.fillStyle = color;
+		trans_total++;
+		if(trans_total==25)
+			stopTransition();
+	}
+
+	function doTransitionCheck()
+	{
+		if(trans_total==-1)
+			return;
+		var	color = "rgb(255,255,255)";
+		gpContext.fillStyle = color;
+
+		var num = 0;
+
+		if(time%1==0)
+			trans_total++;
+
+		for (var r = 0; r < numRows && num < trans_total; r++)
+		{
+			for(var c = 0; c < numCols && num < trans_total; c++)
+			{
+				gpContext.fillRect(rectBoard[r][c].x,rectBoard[r][c].y,rectBoard[r][c].width+10,rectBoard[r][c].height+10);
+			num+=1;
+				
+			}
+		}
+
+		if(trans_total==32)
+			stopTransition();
+	}
+
+	function startTransition()
+	{
+		trans_total=0;
+	}
+	function stopTransition()
+	{
+		trans_total=-1;
+		gpContext.globalAlpha=1;
+		alpha=0;
+
+		if(gameMode<3) 
+			gameMode++;
+		else
+			gameMode=0;
+	}
+
+	function nextMode()
+	{
+		startTransition();
+	}
+
+	function prevMode()
+	{
+		startTransition();
+		if(gameMode>0) gameMode--;
+		else
+			gameMode=3;
+	}
+
+
+	function mainLoop() {
+		
+		if(gameMode==0)
+		{
+			if(videoToPlay==3)
+				videoPlayer();
+			else
+				drawTitleScreen();
+		}
+		else if(gameMode==1)
+			drawMenu();
+		else if(gameMode==2)
+		{
+			drawBackground();
+			drawTitle();
+			drawLinesOnBoard();
+			drawBoardPieces();
+			showAvailableMoves();
+			drawInstructions();
+			drawNoMovesAvailable(whosTurn*-1);
+			videoPlayer();
+			//uncomment updateGpGyroAngles();	
+
+			bigleyInsertPieceIfHisTurn();
+			//flip pieces
+			if(waitmsec==0)
+			{
+				flipPiecesRect();
+			}
+			else
+				waitmsec-=1;
+
+			//drop pieces
+			if(state==1)
+			{
+				dropBoardPieces(dropDirection);
+				msec++;
+				if(msec>65)
+				{
+					reset();
+					msec=0;
+					state = 0;
+				}
+			}
+			else
+			{
+				if(motionControlOn) gpGyroTiltChecking();
+			}
+		}
+
+		doTransition();
+
+		timeInc();
+		window.webkitRequestAnimationFrame(mainLoop);
+	}
+
+	function timeInc()
+	{
+		if(time >=100000000)
+			time=0;
+		else
+			time+=1;
+	}
+
+	var noMovesMsec = 0;
+	var noMovesAvailable = false;
+	function addNoMovesAvailable(numMsec)
+	{
+		noMovesMsec = numMsec;
+		noMovesAvailable = true;
+	}
+
+	function drawNoMovesAvailable(blackOrWhite)
+	{
+		if(noMovesMsec==0)
+			return;
+		else
+			noMovesMsec--;
+		
+		gpContext.save();
+		gpContext.globalAlpha = (noMovesMsec/20.0);
+		var dif = (100-noMovesMsec)/10.0;
+		if(dif>1.0)
+			dif=1;
+		else if (dif<0.5)
+			dif=0.5;
+		if(blackOrWhite==1)
+		{
+			gpContext.drawImage(noMovesBlack, 0, (GP_HEIGHT-GP_HEIGHT*dif)/2, GP_WIDTH, GP_HEIGHT*dif);
+		}
+		else if(blackOrWhite==-1)
+		{
+			gpContext.drawImage(noMovesWhite, 0, (GP_HEIGHT-GP_HEIGHT*dif)/2, GP_WIDTH, GP_HEIGHT*dif);
+		}
+		gpContext.restore();
+	}
+
+	function addHalo(r, c)
+	{
+		console.log(rectBoard[r][c].haloSec);
+		rectBoard[r][c].haloSec = 100.0;
+	}
+
+	function addHaloDif(r, c, sec)
+	{
+		rectBoard[r][c].haloSec += sec;
+	}
+
+	function drawShadowHalo(r,c, blackOrWhite)
+	{
+			gpContext.save();
+			gpContext.globalAlpha = 0.25;
+			if(blackOrWhite==1) gpContext.drawImage(halo_black, rectBoard[r][c].x-(rectBoard[r][c].width*.125)/2, rectBoard[r][c].y-(rectBoard[r][c].height*.125)/2, rectBoard[r][c].width*1.125, rectBoard[r][c].height*1.125);
+			else gpContext.drawImage(halo, rectBoard[r][c].x-(rectBoard[r][c].width*.125)/2, rectBoard[r][c].y-(rectBoard[r][c].height*.125)/2, rectBoard[r][c].width*1.125, rectBoard[r][c].height*1.125);
+			gpContext.restore();
+	}
+
+	function drawHalo(r,c, blackOrWhite)
+	{
+		if(rectBoard[r][c].haloSec>0)
+		{
+			gpContext.save();
+			gpContext.globalAlpha = (rectBoard[r][c].haloSec)/100.0;
+			gpContext.globalAlpha-=0.6;
+			//console.log((gpContext.globalAlpha));
+
+			// if(blackOrWhite==1) gpContext.drawImage(halo_black, rectBoard[r][c].x-(rectBoard[r][c].width*.125)/2, rectBoard[r][c].y-(rectBoard[r][c].height*.125)/2, rectBoard[r][c].width*1.125, rectBoard[r][c].height*1.125);
+			// else gpContext.drawImage(halo, rectBoard[r][c].x-(rectBoard[r][c].width*.125)/2, rectBoard[r][c].y-(rectBoard[r][c].height*.125)/2, rectBoard[r][c].width*1.125, rectBoard[r][c].height*1.125);
+
+			drawGreenOutline(r,c, blackOrWhite);
+			rectBoard[r][c].haloSec/=1.1;
+			gpContext.restore();
+		}
+
+	}
+
+	function drawGreenOutline(r,c,blackOrWhite)
+	{
+		//draw green outline
+			var x = rectBoard[r][c].x-(rectBoard[r][c].width*.025)/2, y = rectBoard[r][c].y-(rectBoard[r][c].height*.025)/2,
+  			  side = rectBoard[r][c].width*1.025;
+			var color = "rgb(255,255,255)";
+			if(blackOrWhite==1)
+				color = "rgb(40,40,40)";
+			gpContext.fillStyle = color;
+			gpContext.lineWidth = 2;
+			//gpContext.fillRect(x, y, side, side);
+
+			var centerDif = (rLen - pRad)/2;
+			if(blackOrWhite==1)
+				gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+			else if(!redBgOn)
+			{
+				gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				if(redBgOn) 
+					{
+						gpContext.save();
+				gpContext.translate(rectBoard[r][c].x+rectBoard[r][c].width/2, rectBoard[r][c].y+rectBoard[r][c].height/2);
+				gpContext.rotate((r*30+c*60)*Math.PI/180);
+					gpContext.drawImage(bigleyFaceBlack, -rectBoard[r][c].width/2,-rectBoard[r][c].height/2,rectBoard[r][c].width,rectBoard[r][c].height);
+					gpContext.restore();
+				}
+			}
+
+	}
+
+	function tallyBoardPiecesAndWinner()
+	{
+		numBlackPieces=0;
+		numWhitePieces=0;
+		for (var r = 0; r < numRows; r++) 
+		{
+			for(var c = 0; c < numCols; c++) 
+			{
+				if(board[r][c]==1)
+				{
+					numBlackPieces++;
+				}
+				else if(board[r][c]==-1)
+				{
+					numWhitePieces++;
+				}
+			}
+		}
+		if(numBlackPieces>numWhitePieces)
+			winner=1;
+		else if(numBlackPieces<numWhitePieces)
+			winner=-1;
+		else if(numBlackPieces==numWhitePieces && numBlackPieces>5)
+			winner=2;
+	}
+
+	function getAvailableMovesArray()
+	{
+		var movesBoard = new Array(numRows); //0 = no move available, 1 = move available
+		for(var i = 0; i < numRows; i++)
+		{
+			movesBoard[i] = new Array(numCols);
+
+			for(var j = 0; j < numCols; j++)
+				movesBoard[i][j] = 0;
+		}
+		var noMoves = true;
+		var notWhosTurn = whosTurn*-1;
+
+		for (var r = 0; r < numRows; r++) 
+		{
+			for(var c = 0; c < numCols; c++) 
+			{
+				if(board[r][c]==0)
+				{
+					var canInsert = false;
+
+					if(whosTurn!=0) //not starting move
+					{
+					if( checkCanInsertBoardPieceUpLeft(r, c, notWhosTurn, whosTurn, false) ) canInsert = true;
+					if( checkCanInsertBoardPieceUp(r, c, notWhosTurn, whosTurn, false) ) canInsert = true;
+					if( checkCanInsertBoardPieceUpRight(r, c, notWhosTurn, whosTurn, false) ) canInsert = true;
+					if( checkCanInsertBoardPieceRight(r, c, notWhosTurn, whosTurn, false) ) canInsert = true;
+					if( checkCanInsertBoardPieceDownRight(r, c, notWhosTurn, whosTurn, false) ) canInsert = true;
+					if( checkCanInsertBoardPieceDown(r, c, notWhosTurn, whosTurn, false) ) canInsert = true;
+					if( checkCanInsertBoardPieceDownLeft(r, c, notWhosTurn, whosTurn, false) ) canInsert = true;
+					if( checkCanInsertBoardPieceLeft(r, c, notWhosTurn, whosTurn, false) ) canInsert = true;
+
+					if(canInsert){
+						movesBoard[r][c] = 1;
+						noMoves = false;
+					}
+					}
+					else if(whosTurn==0 && state!=1 && isShowingAvailableMoves) //starting move
+					{
+						if( checkCanInsertBoardPieceUpLeft(r, c, 1, -1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceUp(r, c, 1, -1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceUpRight(r, c, 1, -1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceRight(r, c, 1, -1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceDownRight(r, c, 1, -1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceDown(r, c, 1, -1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceDownLeft(r, c, 1, -1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceLeft(r, c, 1, -1, false) ) canInsert = true;
+						if(canInsert){ movesBoard[r][c] = 1; }
+						canInsert = false;
+						if( checkCanInsertBoardPieceUpLeft(r, c, -1, 1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceUp(r, c, -1, 1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceUpRight(r, c, -1, 1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceRight(r, c, -1, 1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceDownRight(r, c, -1, 1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceDown(r, c, -1, 1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceDownLeft(r, c, -1, 1, false) ) canInsert = true;
+						if( checkCanInsertBoardPieceLeft(r, c, -1, 1, false) ) canInsert = true;
+						if(canInsert) { movesBoard[r][c] = 1; }
+						noMoves=false;
+					}
+
+				}
+			}
+		}
+
+		if(noMoves)
+			return false;
+		else
+			return movesBoard;
+	}
+
+	function drawAvailableMoves(movesBoard)
+	{
+		if(movesBoard==false)
+			return;
+		for (var r = 0; r < numRows; r++) 
+		{
+			for(var c = 0; c < numCols; c++) 
+			{
+				if(movesBoard[r][c]==1)
+				{
+					var num = time%100;
+					var min = 75;
+					if(num>min)
+						rectBoard[r][c].haloSec=100-num+min;
+					else
+						rectBoard[r][c].haloSec=num+min;
+				}
+			}
+		}
+	}
+
+	function flipPiecesFrom(i, j, r, c, maxFlipPr)
+	{
+		board[i][j] *= -1;
+		rectBoard[i][j].flipToZero = true;
+		rectBoard[i][j].flipPr = maxFlipPr;
+		maxFlipPr++;
+
+		if(i!=r || j!=c)
+		{
+			if(i<r)
+				i++;
+			else if(i>r)
+				i--;
+
+			if(j<c)
+				j++;
+			else if(j>c)
+				j--;
+			flipPiecesFrom(i, j, r, c, maxFlipPr);
+		}
+	}
+
+	var bigleyInsertTime = -1;
+	function bigleyInsertPieceIfHisTurn()
+	{
+		if(redBgOn && !isFlipping && whosTurn==-1 && time>bigleyInsertTime)
+		{
+			randomlyInsertPieceLeftToRight();
+			
+		}
+	}
+
+	function randomlyInsertPieceLeftToRight()
+	{
+		var insertedPiece = false;
+		for (var r = 0; insertedPiece==false && r < numRows; r++)
+		{
+			for(var c = 0; insertedPiece==false && c < numCols; c++)
+			{
+				if( canInsertBoardPieceAt(r,c) )
+				{
+					insertedPiece = true;
+					if(!isFlipping && waitmsec==0)
+						waitmsec = 10;
+					nowPr[nowPrI] = 0;
+					if(nowPrI<numPr-1)
+						nowPrI++;
+					else
+						nowPrI=0;
+					noMovesMsec = 0;
+					noMovesAvailable = false;
+					insertBoardPieceAt(r, c);
+					switchTurn();
+      				playPlaceSound();
+				}
+			}
+		}
+	}
+
+	function randomlyInsertPieceRightToLeft()
+	{
+		var insertedPiece = false;
+		for (var r = numRows-1; insertedPiece==false && r >= 0; r--)
+		{
+			for(var c = numCols-1; insertedPiece==false && c >= 0; c--)
+			{
+				if( canInsertBoardPieceAt(r,c) )
+				{
+					insertedPiece = true;
+					waitmsec = 20;
+					nowPr = 0;
+					insertBoardPieceAt(r, c);
+					switchTurn();
+      		   		playPlaceSound();
+				}
+			}
+		}
+	}
+
+	function checkCanInsertBoardPieceUpLeft(r, c, notWhosTurn, whosTurn, shouldFlip)
+	{
+		if( r - 1 >= 0 && c - 1 >= 0 && board[r-1][c-1] == notWhosTurn)
+			for(var i = r - 1, j = c - 1; i >= 0 && j >= 0; i--,j--)
+			{
+					if(board[i][j]==whosTurn)
+					{
+						if(shouldFlip) flipPiecesFrom(r-1, c-1, i+1, j+1, 0);
+						return true;
+					}
+					else if(board[i][j] == 0)
+						break;
+			}
+	}
+
+	function checkCanInsertBoardPieceUp(r, c, notWhosTurn, whosTurn, shouldFlip)
+	{
+		if( r - 1 >= 0 && board[r-1][c] == notWhosTurn)
+			for(var i = r - 1; i >= 0; i--)
+			{
+				if(board[i][c]==whosTurn)
+				{
+					if(shouldFlip) flipPiecesFrom(r-1, c, i+1, c, 0);
+					return true;
+				}
+				else if(board[i][c] == 0)
+					break;
+			}
+	}
+
+	function checkCanInsertBoardPieceUpRight(r, c, notWhosTurn, whosTurn, shouldFlip)
+	{
+		if( r - 1 >= 0 && c + 1 < numCols && board[r-1][c+1] == notWhosTurn)
+			for(var i = r - 1, j = c + 1; i >= 0 && j < numCols; i--,j++)
+			{
+					if(board[i][j]==whosTurn)
+					{
+						if(shouldFlip) flipPiecesFrom(r-1, c+1, i+1, j-1, 0);
+						return true;
+					}
+					else if(board[i][j] == 0)
+						break;
+			}
+	}
+
+	function checkCanInsertBoardPieceRight(r, c, notWhosTurn, whosTurn, shouldFlip)
+	{
+		if( c + 1 < numCols && board[r][c+1] == notWhosTurn)
+			for(var j = c + 1; j < numCols; j++)
+			{
+				if(board[r][j]==whosTurn)
+				{
+					if(shouldFlip) flipPiecesFrom(r, c+1, r, j-1, 0);
+					return true;
+				}
+				else if(board[r][j] == 0)
+					break;
+			}
+	}
+
+	function checkCanInsertBoardPieceDownRight(r, c, notWhosTurn, whosTurn, shouldFlip)
+	{
+		//down right
+		if( r + 1 < numRows && c + 1 < numCols && board[r+1][c+1] == notWhosTurn)
+			for(var i = r + 1, j = c + 1; i < numRows && j < numCols; i++,j++)
+			{
+					if(board[i][j]==whosTurn)
+					{
+						if(shouldFlip) flipPiecesFrom(r+1, c+1, i-1, j-1, 0);
+						return true;
+					}
+					else if(board[i][j] == 0)
+						break;
+			}
+	}
+
+	function checkCanInsertBoardPieceDown(r, c, notWhosTurn, whosTurn, shouldFlip)
+	{
+		if(r + 1 < numRows && board[r+1][c] == notWhosTurn)
+			for(var i = r + 1; i < numRows; i++)
+			{
+				if(board[i][c]==whosTurn)
+				{
+					if(shouldFlip) flipPiecesFrom(r+1, c, i-1, c, 0);
+					return true;
+				}
+				else if(board[i][c] == 0)
+					break;
+			}
+	}
+
+	function checkCanInsertBoardPieceDownLeft(r, c, notWhosTurn, whosTurn, shouldFlip)
+	{
+		if(r + 1 < numRows && c - 1 >= 0 && board[r+1][c-1] == notWhosTurn)
+			for(var i = r + 1, j = c - 1; i < numRows && j>= 0; i++,j--)
+			{
+				if(board[i][j]==whosTurn)
+				{
+					if(shouldFlip) flipPiecesFrom(r+1, c-1, i-1, j+1, 0);
+					return true;
+				}
+				else if(board[i][j] == 0)
+					break;
+			}
+	}
+
+	function checkCanInsertBoardPieceLeft(r, c, notWhosTurn, whosTurn, shouldFlip)
+	{
+		if(c - 1 >= 0 && board[r][c-1] == notWhosTurn)
+			for(var j = c - 1; j >= 0; j--)
+			{
+				if(board[r][j]==whosTurn)
+				{
+					if(shouldFlip) flipPiecesFrom(r, c-1, r, j+1, 0);
+					return true;
+				}
+				else if(board[r][j] == 0)
+					break;
+			}
+	}
+
+	function checkFirstMoveSetWhosTurn(r, c)
+	{
+		var canInsert = false;
+
+ 		if( board[r][c] != 0 )
+ 			return false;
+
+ 		var whosTurnTemp = 1;
+
+ 		for(var i = 0; i < 2; i++)
+ 		{
+ 			if( checkCanInsertBoardPieceUpLeft(r, c, whosTurnTemp, whosTurnTemp*-1, true) ) canInsert = true;
+			if( checkCanInsertBoardPieceUp(r, c, whosTurnTemp, whosTurnTemp*-1, true) ) canInsert = true;
+			if( checkCanInsertBoardPieceUpRight(r, c, whosTurnTemp, whosTurnTemp*-1, true) ) canInsert = true;
+			if( checkCanInsertBoardPieceRight(r, c, whosTurnTemp, whosTurnTemp*-1, true) ) canInsert = true;
+			if( checkCanInsertBoardPieceDownRight(r, c, whosTurnTemp, whosTurnTemp*-1, true) ) canInsert = true;
+			if( checkCanInsertBoardPieceDown(r, c, whosTurnTemp, whosTurnTemp*-1, true) ) canInsert = true;
+			if( checkCanInsertBoardPieceDownLeft(r, c, whosTurnTemp, whosTurnTemp*-1, true) ) canInsert = true;
+			if( checkCanInsertBoardPieceLeft(r, c, whosTurnTemp, whosTurnTemp*-1, true) ) canInsert = true;
+
+			if(canInsert==true)
+			{
+				whosTurn = whosTurnTemp*-1;
+				return true;
+			}
+			whosTurnTemp *=-1;
+		}
+
+		return canInsert;
+	}
+
+	function canInsertBoardPieceAt(r, c)
+	{
+		var canInsert = false;
+ 		var notWhosTurn =  whosTurn * -1;
+
+ 		if( board[r][c] != 0 )
+ 			return false;
+
+ 		if( checkCanInsertBoardPieceUpLeft(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
+		if( checkCanInsertBoardPieceUp(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
+		if( checkCanInsertBoardPieceUpRight(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
+		if( checkCanInsertBoardPieceRight(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
+		if( checkCanInsertBoardPieceDownRight(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
+		if( checkCanInsertBoardPieceDown(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
+		if( checkCanInsertBoardPieceDownLeft(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
+		if( checkCanInsertBoardPieceLeft(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
+
+		return canInsert;
+	}
+
+	function insertBoardPieceAt(r, c)
+	{
+		board[r][c] = whosTurn;
+	}
+
+</script>
+</body>
 </html>
