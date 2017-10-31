@@ -558,7 +558,7 @@
 		// touchY = evt.touchY/3900.0 * 480;
 		console.log(touchX);
 		console.log(touchY);
-		var startingX = -rLen/2;
+		//var startingX = -rLen/2;
 
 		var r = parseInt(4 * touchY/GP_HEIGHT);
 		var c = parseInt(8 * ((touchX-startingX)/(GP_WIDTH + rLen)));
@@ -708,7 +708,7 @@
 	//title
 	var title = new Image();
 	var startbtn = new Image();
-	var startbtn_rect = new rect(560,310,260,78);
+	var startbtn_rect = new rect(300,290,260,78);
 
 	var time = 0;
 
@@ -826,10 +826,29 @@
 
 	function setBeginning4Pieces()
 	{
+		if(numCols==4)
+		{
+			setBeginning4Pieces4x4();
+		}
+		else if(numCols==8)
+		{
+			setBeginning4Pieces4x8();
+		}
+	}
+	function setBeginning4Pieces4x8()
+	{
 		board[1][3] = -1;
 		board[1][4] = 1;
 		board[2][3] = 1;
 		board[2][4] = -1;
+	}
+
+	function setBeginning4Pieces4x4()
+	{
+		board[1][1] = -1;
+		board[1][2] = 1;
+		board[2][1] = 1;
+		board[2][2] = -1;
 	}
 
 	function setTemplatePieces_U()
@@ -968,13 +987,13 @@
 	}
 
 	var rectBoard = new Array(numRows);
+	var startingX = (GP_WIDTH-rLen*numCols)/2;
 	setDefaultRectBoard();
 	setBeginning4Pieces();
 	function setDefaultRectBoard()
 	{
 		var centerDif = (rLen - pRad)/2;
-		var startingX = -rLen/2;
-
+		//var startingX = -rLen/2;
 		for (var r = 0; r < numRows; r++)
 		{
 			rectBoard[r] = new Array(numCols);
@@ -1120,7 +1139,7 @@
 	function drawTitleSquare(r, c)
 	{
 		var centerDif = (rLen - pRad)/2;
-		var startingX = -rLen/2;
+		//var startingX = -rLen/2;
 		var rectBoardWidth = pRad+10;
 		var x = startingX + c * rLen + centerDif;
 		var y = r * rLen + centerDif;
@@ -1146,7 +1165,7 @@
 		gpContext.lineWidth="3.25";
 		gpContext.strokeStyle = "black";
 
-		startingX = -rLen/2;
+		//startingX = -rLen/2;
 		for(r = 0; r < numRows; r++)
 		{
 			for(c = 0; c < numCols; c++)
@@ -1337,7 +1356,7 @@
 		{
 
 			var centerDif = (rLen - pRad)/2;
-			var startingX = -rLen/2;
+			//var startingX = -rLen/2;
 			rectBoard[r][c].width = pRad;
 			rectBoard[r][c].x = startingX + c * rLen + centerDif;
 			rectBoard[r][c].flipPr = -1;
@@ -1351,28 +1370,28 @@
 		switch(nowPr[i])
 		{
 			case 0:
-				divide = 2.5;
+				divide = 10;
 				break;
 			case 1:
-				divide = 2.25;
+				divide = 3.25;
 				break;
 			case 2:
-				divide = 1.75;
+				divide = 2.75;
 				break;
 			case 3:
-				divide = 1.5;
+				divide = 2.5;
 				break;
 			case 4:
-				divide = 1.25;
+				divide = 2.25;
 				break;
 			case 5:
-				divide = 1.0;
+				divide = 2.0;
 				break;
 			case 6:
-				divide = .75;
+				divide = 1.75;
 				break;
 			case 7:
-				divide = .5;
+				divide = 1.5;
 				break;
 		}
 		flipAmount = flipAmount/divide;
@@ -1382,7 +1401,7 @@
 	{
 		for(var i = 0; i < numPr; i++)
 		{
-		var startingX = -rLen/2;
+		//var startingX = -rLen/2;
 		//pRad/4
 		var flipAmount = calcFlipAmount(i);
 		var matchedAPr = false;
@@ -1577,7 +1596,7 @@
 			video.load();
 			//video.pause();
 			videoToPlay=-1;
-			if(confirm("Bigley beat you! Better luck next time! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			if(confirm("Bigley beat you! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
 			{
 				confirmPlayAgain();
 			}
@@ -1601,7 +1620,7 @@
 			video2.load();
 			//video2.pause();
 			videoToPlay=-1;
-			if(confirm("You beat Bigley! You're quite good! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			if(confirm("You beat Bigley! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
 			{
 				confirmPlayAgain();
 			}
@@ -1625,7 +1644,7 @@
 			video3.load();
 			//video3.pause();
 			videoToPlay=-1;
-			if(confirm("Tied with Bigley! Rematch? \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			if(confirm("Tied with Bigley! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
 			{
 				confirmPlayAgain();
 			}
