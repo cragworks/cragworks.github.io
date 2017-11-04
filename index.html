@@ -575,7 +575,7 @@
 			addHalo(r, c);
 
 			//check for touching on the title screen
-
+			var flipDelay = 20;
 			if(redBgOn && whosTurn==-1)
 				return;
 
@@ -584,7 +584,7 @@
 				if(checkFirstMoveSetWhosTurn(r,c))
 				{
 					if(!isFlipping && waitmsec==0)
-						waitmsec = 10;
+						waitmsec = flipDelay;
 					nowPr[nowPrI] = 0;
 					if(nowPrI<numPr-1)
 						nowPrI++;
@@ -600,7 +600,7 @@
 			else if( canInsertBoardPieceAt(r,c) )
 			{
 				if(!isFlipping && waitmsec==0)
-					waitmsec = 10;
+					waitmsec = flipDelay;
 				nowPr[nowPrI] = 0;
 				if(nowPrI<numPr-1)
 						nowPrI++;
@@ -980,6 +980,7 @@
   			 this.waitDropSec = 0;
 
   		 this.flipToZero = false;
+  		 this.flipToFull = false;
   		 this.flipPr = -1; //0 to 32 because 4 x 8 this is which flips first
   		 this.haloSec = 0;
   		 this.haloMax = 20;
@@ -1039,16 +1040,7 @@
 
 		if((board[r][c]!=0 && gameOver==true && board[r][c]==winner && rectBoard[r][c].flipPr==-1) || winner==2 && numBlackPieces>5){ 
 			drawCrown(r, c);
-
-			if(!redBgOn)
-			{
-				if(winner==1)
-					alertBlackWins();
-				else if(winner==-1)
-					alertWhiteWins();
-				else
-					alertTie();
-			}
+			
 		}
 		if(redBgOn && board[r][c]!=0) 
 			drawBigleyFace(r, c, board[r][c]*-1);
@@ -1088,6 +1080,17 @@
 		//gpContext.drawImage(crown, rectBoard[r][c].x+rectBoard[r][c].width/4, rectBoard[r][c].y+rectBoard[r][c].height/3.5,rectBoard[r][c].width/2,rectBoard[r][c].height/4);
 		gpContext.drawImage(crown, -rectBoard[r][c].width/4,-rectBoard[r][c].height/8,rectBoard[r][c].width/2,rectBoard[r][c].height/4);
 		gpContext.restore();
+
+		checkIfFlipping();
+		if(noMovesMsec==0&&!isFlipping&&!redBgOn)
+			{
+				if(winner==1)
+					alertBlackWins();
+				else if(winner==-1)
+					alertWhiteWins();
+				else
+					alertTie();
+			}
 	}
 
 	function drawPass(r, c, color)
@@ -1341,6 +1344,7 @@
 		else if(rectBoard[r][c].width <= 0)
 		{
 			rectBoard[r][c].flipToZero = false;
+			rectBoard[r][c].flipToFull = true;
       		playFlipSound();
 		}	
 	}
@@ -1360,6 +1364,7 @@
 			rectBoard[r][c].width = pRad;
 			rectBoard[r][c].x = startingX + c * rLen + centerDif;
 			rectBoard[r][c].flipPr = -1;
+			rectBoard[r][c].flipToFull = false;
 		}
 	}
 
@@ -1370,7 +1375,7 @@
 		switch(nowPr[i])
 		{
 			case 0:
-				divide = 10;
+				divide = 5;
 				break;
 			case 1:
 				divide = 3.25;
@@ -1397,12 +1402,22 @@
 		flipAmount = flipAmount/divide;
 		return flipAmount;
 	}
+
+	function flipPiece(r, c, flipAmount)
+	{
+		if(rectBoard[r][c].flipToZero == true)
+		{
+			flipPieceToZeroSize(r, c, flipAmount);
+		}
+		else
+		{
+			flipPieceToNormalSize(r, c, flipAmount);
+		}
+	}
 	function flipPiecesRect()
 	{
 		for(var i = 0; i < numPr; i++)
 		{
-		//var startingX = -rLen/2;
-		//pRad/4
 		var flipAmount = calcFlipAmount(i);
 		var matchedAPr = false;
 
@@ -1414,14 +1429,17 @@
 				{
 					matchedAPr = true;
 					isFlipping = true;
-					if(rectBoard[r][c].flipToZero == true)
-					{
-						flipPieceToZeroSize(r, c, flipAmount);
-					}
-					else
-					{
-						flipPieceToNormalSize(r, c, flipAmount);
-					}
+					flipPiece(r, c, flipAmount);
+				}
+				else if(rectBoard[r][c].flipToZero==true)
+				{
+					isFlipping = true;
+					flipPiece(r, c, flipAmount/10);
+				}
+				else if(rectBoard[r][c].flipToFull==true)
+				{
+					isFlipping = true;
+					flipPiece(r, c, flipAmount/10);
 				}
 			}
 		}
@@ -1432,6 +1450,20 @@
 			isFlipping = false;
 		}
 	}
+	}
+
+	function checkIfFlipping()
+	{
+		var checkIfStillFlipping = false;
+			for (var r = 0; r < numRows; r++) 
+			{
+				for(var c = 0; c < numCols; c++) 
+				{
+					if(rectBoard[r][c].flipToZero==true || rectBoard[r][c].flipToFull==true)
+						checkIfStillFlipping = true;
+				}
+			}
+		isFlipping = checkIfStillFlipping;
 	}
 
 	function gpGyroRotationChecking()
@@ -1853,6 +1885,7 @@
 			//uncomment updateGpGyroAngles();	
 
 			bigleyInsertPieceIfHisTurn();
+			
 			//flip pieces
 			if(waitmsec==0)
 			{
