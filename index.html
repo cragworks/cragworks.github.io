@@ -1752,13 +1752,19 @@
 		gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
 
 		//1p
-		gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
+		
 			//press
 			//gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
 			//green
-			//gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
+		if(trans_total==-1 || !redBgOn)
+			gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
+		else if(redBgOn)
+			gpContext.drawImage(menu1p_press, menuX, menuY+10, menuW*0.95,menuH*0.95);
 		//2p
-		gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
+		if(trans_total==-1 || redBgOn)
+			gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
+		else if(!redBgOn)
+			gpContext.drawImage(menu2p_press, menuX+menuW*1.25, menuY+10, menuW*0.95,menuH*0.95);
 			//press
 			//gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
 			//green
@@ -1788,20 +1794,24 @@
 		if(trans_total==-1)
 			return;
 
-		alpha += delta;
         //// if delta <=0 or >=1 then reverse
        // if (alpha <= 0 || alpha >= 1) delta = -delta;
         /// clear canvas
-        gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
-        /// set global alpha
+        if(trans_total>15)
+        {
+		alpha += delta;
+        	gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
+       	 /// set global alpha
         gpContext.globalAlpha = alpha;
         /// re-draw image
         gpContext.drawImage(img, 0, 0);
 
+
 		var color = "rgb(255,255,255)";
 		gpContext.fillStyle = color;
+		}
 		trans_total++;
-		if(trans_total==25)
+		if(trans_total==35)
 			stopTransition();
 	}
 
