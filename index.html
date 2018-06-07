@@ -192,7 +192,32 @@
 			videoIntro.pause();
 			videoIntro.currentTime = 0;
 			videoIntro.load();
-			videoToPlay=-1;
+		}
+		else if(videoToPlay==2)
+		{
+
+			videoToPlay = -1;
+			video3.pause();
+			video2.currentTime = 0;
+			video2.load();
+			video2.pause();
+		}
+		else if(videoToPlay==1)
+		{
+
+			videoToPlay = -1;
+			video1.pause();
+			video1.currentTime = 0;
+			video1.load();
+			video1.pause();
+		}
+		else if(videoToPlay==0)
+		{
+			videoToPlay = -1;
+			video.pause();
+			video.currentTime = 0;
+			video.load();
+			video.pause();
 		}
 	}
 	function onGamePadButtonPress(evt) {
@@ -295,7 +320,7 @@
 			calibrate();
       		playPlaceSound();
       		gameMode++;
-      		if(gameMode==3)
+      		if(gameMode==4)
       			gameMode=0;
       		//drawText("CALIBRATED", 854/10, 480-30)
       		//videoToPlay = 3;
@@ -414,13 +439,60 @@
     function startLevel()
     {
     	gameMode=0;
-    	redBgOn = !redBgOn;
+    	playMusic();
+    	//redBgOn=true;
+    	set16pieceMode();
+    	//redBgOn = !redBgOn;
         //audioManager.playSound(bgmMusic, 'gamepad', 0, 0, true);
         clearInterval(interval); //remove loading flashing
         //uncomment playBgm();
         bgmMusicIsOn=true;
 		window.webkitRequestAnimationFrame(mainLoop);
-        playReversi32Intro();
+        //playReversi32Intro();
+        set32pieceMode();
+    }
+
+	var audio = new Audio('sfx/title.mp3');
+    function playMusic()
+    {
+    	var oldTime = audio.currentTime;
+    	audio.pause();
+
+    	if(gameMode==0)
+    	{
+    		if(onTitle)
+    		{
+	    		audio = new Audio('sfx/tamborine.mp3');
+				audio.play();
+				audio.currentTime=oldTime;
+	    	}
+			 else
+			 {
+	     		audio = new Audio('sfx/bassPluck+Tamb.mp3');
+	     		audio.play();
+				audio.currentTime=oldTime;
+    			//audio.pause();
+	     	}
+    	}
+    	else if(gameMode==1)
+    	{
+	    	audio = new Audio('sfx/titleFinal.mp3');
+			audio.play();
+			audio.currentTime=oldTime;
+    	}
+    	else if(gameMode==2)
+    	{
+    		audio = new Audio('sfx/main_theme.ogg');
+			audio.play();
+			audio.currentTime=oldTime;
+    	}
+    	else if(gameMode==3)
+    	{
+	    	audio = new Audio('sfx/tamborine.mp3');
+			audio.play();
+			audio.currentTime=oldTime;
+    	}
+    	audio.loop=true;
     }
 
 	// This code is the initialization performed after index.html is loaded on the GamePad.
@@ -506,26 +578,38 @@
 	gpTouchPanel.addEventListener(nwf.events.TouchControlEvent.TOUCH_END, onTouchEnd, this);
 	gpTouchPanel.addEventListener(nwf.events.TouchControlEvent.TOUCH_START, onTouchStart, this);
 */
+window.addEventListener('keydown', 
+  	randomlyInsertPiece);
+
 	var touchX = 0;
 	var touchY = 0;
 	var touched = 0; // 0 not touched, 1 touch start, 2 moving
 
 	function titleTouchStart(evt) {
+		if(trans_total!=-1)
+			return;
 		var posx = startbtn_rect.x;
 		var posy = startbtn_rect.y;
 		var endx = startbtn_rect.x + startbtn_rect.width;
 		var endy = startbtn_rect.y + startbtn_rect.height;
   		
   		if(videoToPlay==3)
+  		{
   			stopPlayingIntro();
-  		else
-			if( (touchX>posx && touchY>posy) && (touchX<endx && touchY<endy) ) {
+  			playMusic();
+  		}
+  		if( (touchX>posx && touchY>posy) && (touchX<endx && touchY<endy) ) {
 				//uncomment audioManager.playSound(placedSfx, 'gamepad');
+				//startbtn = startbtnRed;
   				nextMode();
+      		  onTitle=false;
+      		  playMusic();
   			}
 	}
 
 	function menuTouchStart(evt) {
+		if(trans_total!=-1)
+			return;
 		var posx = menu1p_rect.x;
 		var posy = menu1p_rect.y;
 		var endx = menu1p_rect.x + menu1p_rect.width;
@@ -535,6 +619,7 @@
 			//uncomment audioManager.playSound(placedSfx, 'gamepad');
   			nextMode();
 			redBgOn = true;
+        	playMusic();
   		}
   		posx = menu2p_rect.x;
 		posy = menu2p_rect.y;
@@ -545,11 +630,52 @@
 			//uncomment audioManager.playSound(placedSfx, 'gamepad');
   			nextMode();
 			redBgOn = false;
+        	playMusic();
   		}
 	}
 
-	gpCanvas.onmousedown=onTouchStart;
+	function piecesMenuTouchStart(evt) {
+		if(trans_total!=-1)
+			return;
+		var posx = m4x4_rect.x;
+		var posy = m4x4_rect.y;
+		var endx = m4x4_rect.x + m4x4_rect.width;
+		var endy = m4x4_rect.y + m4x4_rect.height;
 
+		if( (touchX>posx && touchY>posy) && (touchX<endx && touchY<endy) ) {
+			//uncomment audioManager.playSound(placedSfx, 'gamepad');
+       		set16pieceMode();
+  			nextMode();
+      		playMusic();
+  		}
+  		posx = m4x8_rect.x;
+		posy = m4x8_rect.y;
+		endx = m4x8_rect.x + m4x8_rect.width;
+		endy = m4x8_rect.y + m4x8_rect.height;
+		
+		if( (touchX>posx && touchY>posy) && (touchX<endx && touchY<endy) ) {
+			//uncomment audioManager.playSound(placedSfx, 'gamepad');
+  			set32pieceMode();
+  			nextMode();
+  			playMusic();
+  		}
+
+  		posx = m8x8_rect.x;
+		posy = m8x8_rect.y;
+		endx = m8x8_rect.x + m8x8_rect.width;
+		endy = m8x8_rect.y + m8x8_rect.height;
+		
+		if( (touchX>posx && touchY>posy) && (touchX<endx && touchY<endy) ) {
+			//uncomment audioManager.playSound(placedSfx, 'gamepad');
+  			set64pieceMode();
+  			nextMode();
+      		playMusic();
+  		}
+
+	}
+
+
+	gpCanvas.onmousedown=onTouchStart;
 	function onTouchStart(evt) {
 	 	touched = 1;
 		touchX = evt.clientX;
@@ -560,19 +686,29 @@
 		console.log(touchY);
 		//var startingX = -rLen/2;
 
-		var r = parseInt(4 * touchY/GP_HEIGHT);
-		var c = parseInt(8 * ((touchX-startingX)/(GP_WIDTH + rLen)));
+		var r = parseInt(numRows * touchY/GP_HEIGHT);
+		//var c = parseInt(numCols * ((touchX-startingX)/(GP_WIDTH + pRad)));
+		var c = parseInt(numCols * ((touchX-startingX)/(rLen*numCols)));
 		
 		if(gameMode==0)
 			titleTouchStart(evt);
 		else if(gameMode==1)
 			menuTouchStart(evt);
-		else if(gameMode==2)
+		else if(gameMode==2) //pieces menu
+			piecesMenuTouchStart(evt);
+		else if(gameMode==3)
 		{
+			tType="";
 			if(gameOver)
-				confirmPlayAgain();
+			{
+				gameMode = 0;
+				stopPlayingIntro();
+				videoToPlay=-1;
+				reset();
+			}
 			
-			addHalo(r, c);
+			if(r < numRows && c < numCols)
+				addHalo(r, c);
 
 			//check for touching on the title screen
 			var flipDelay = 20;
@@ -594,6 +730,7 @@
 					switchTurn();
 	      		    playPlaceSound();
 	      		    bigleyInsertTime = time+50;
+	      			tType="grow";
 				}
 
 			}
@@ -612,7 +749,16 @@
 				switchTurn();
 	      		playPlaceSound();
 	      		bigleyInsertTime = time+50;
+	      		tType="grow";
 			}
+
+			if(r<numRows && c<numCols && gameMode==3)
+			{
+				pieceTemp = rectBoard[r][c];
+	      		if(tType=="") tType="corner";
+				startTransition();
+			}
+
 		}
 	}
 
@@ -629,6 +775,9 @@
 
 	function playPlaceSound()
 	{
+		return;
+    	var sfx = new Audio('sfx/placed3.ogg');
+		sfx.play();
 		// uncomment
 		// if(randFloat(0,1)>=0.5)
 		// 	audioManager.playSound(placedSfx, 'gamepad');
@@ -651,7 +800,7 @@
 
 	// This code is the main loop that is run every frame along with the page display update.
 	var numRows = 4;
-	var numCols = 8;
+	var numCols = 4;
 	var board = new Array(numRows);
 	clearBoard();
 
@@ -665,14 +814,21 @@
 	var assetsToLoad = [],
     assetsLoaded = 0;
 
+	var bigleyHead = new Image();
 	var background = new Image();
 	var blackPiece = new Image();
 	var whitePiece = new Image();
+
+
+	var blackHand = new Image();
+	var whiteHand = new Image();
+
 	var crown = new Image();
 	var pass_black = new Image();
 	var pass_white = new Image();
 	var noMovesBlack = new Image();
 	var noMovesWhite = new Image();
+	var noMovesBigley = new Image();
 	var instructions = new Image();
 	var halo = new Image();
 	var halo_black = new Image();
@@ -681,6 +837,7 @@
 	var reversi32 = new Image();
 
 	var tiltMe = new Image();
+	var tiltMeBlue = new Image();
 	var blackPieceReg = new Image();
 	blackPieceReg = blackPiece;
 	var whitePieceReg = new Image();
@@ -694,21 +851,35 @@
 	var menu1p = new Image();
 	var menu1p_press = new Image();
 	var menu1p_green = new Image();
-		var menuW = 300;
-		var menuH = 300;
-		var menuX = GP_WIDTH/8;
-		var menuY = GP_HEIGHT/2-menuH/2;
+		var menuW = 255*1.2;
+		var menuH = 126*1.2;
+		var menuX = 300;
+		var menuY = 25;
 	var menu1p_rect = new rect(menuX, menuY, menuW,menuH);
+	var menu2p_rect = new rect(menuX, menuY+225, menuW,menuH);
 
 	var menu2p = new Image();
 	var menu2p_press = new Image();
 	var menu2p_green = new Image();
-	var menu2p_rect = new rect(menuX+menuW*1.25, menuY, menuW,menuH);
+	//var menu2p_rect = new rect(menuX+menuW*1.25, menuY, menuW,menuH);
+
+	//pieces menu
+	var pmBg = new Image();
+	var m4x4 = new Image();
+	var m4x4r = new Image();
+	var m4x8 = new Image();
+	var m4x8r = new Image();
+	var m8x8 = new Image();
+	var m8x8r = new Image();
+	var m4x4_rect = new rect(5,135,200,200);
+	var m4x8_rect = new rect(255,135,355,200);
+	var m8x8_rect = new rect(645,135,200,200);
 
 	//title
 	var title = new Image();
 	var startbtn = new Image();
-	var startbtn_rect = new rect(300,290,260,78);
+	var startbtnRed = new Image();
+	var startbtn_rect = new rect(300,390,242,119);
 
 	var time = 0;
 
@@ -729,11 +900,15 @@
 	var isShowingInstructions = false;
 
 	var redBgOn = false;
-	var gameMode = 0; //0 = title, 1 = menu, 2 = cpu, 3 = 2p vs
+	var gameMode = 0; //0 = title, 1 = menu, 2 = pieces menu, 3 = game
 
 	loadImages();
 	function loadImages()
 	{
+		bigleyHead.src = "images/bigleyhead.png";
+		blackHand.src = "images/blackHand.png";
+		whiteHand.src = "images/whiteHand.png";
+
 		background.src = "images/background.png";
 					blackPiece.src = "images/black_piece.png";
 					whitePiece.src = "images/white_piece.png";
@@ -742,6 +917,7 @@
 					pass_white.src = "images/pass_white.png";
 					noMovesBlack.src = "images/no_moves_black.png";
 					noMovesWhite.src = "images/no_moves_white.png";
+					noMovesBigley.src = "images/no_moves_bigley.png";
 					instructions.src = "images/options.png";
 					halo.src = "images/halo.png";
 					halo_black.src = "images/halo_black.png";
@@ -749,6 +925,7 @@
 					circle_white.src = "images/circle_white.png";
 					reversi32.src = "images/reversi_32.png";
 					tiltMe.src = "images/tilt_me.png";
+					tiltMeBlue.src = "images/tilt_me_blue.png";
 					bigleyFaceBlack.src = "images/bigley_face_black.png";
 					bigleyFaceWhite.src = "images/bigley_face_white.png";
 					bigleyFaceBlackBlink.src = "images/bigley_face_black_blink.png";
@@ -764,6 +941,26 @@
 
 					title.src = "images/title.png";
 					startbtn.src = "images/startbtn.png";
+					startbtnRed.src = "images/startbtnRed.png";
+					
+					//pieces menu
+					pmBg.src = "images/board_menu.png";
+					m4x4.src = "images/4x4.png";
+					m4x4r.src = "images/4x4r.png";
+					m4x8.src = "images/4x8.png";
+					m4x8r.src = "images/4x8r.png";
+					m8x8.src = "images/8x8.png";
+					m8x8r.src = "images/8x8r.png";
+					m4x4.addEventListener("load", loadHandler, false);
+					m4x4r.addEventListener("load", loadHandler, false);
+					m4x8.addEventListener("load", loadHandler, false);
+					m4x8r.addEventListener("load", loadHandler, false);
+					m8x8.addEventListener("load", loadHandler, false);
+					m8x8r.addEventListener("load", loadHandler, false);
+
+					blackHand.addEventListener("load", loadHandler, false);
+					whiteHand.addEventListener("load", loadHandler, false);
+					bigleyHead.addEventListener("load", loadHandler, false);
 
 					background.addEventListener("load", loadHandler, false);
 					blackPiece.addEventListener("load", loadHandler, false);
@@ -773,6 +970,7 @@
 					pass_white.addEventListener("load", loadHandler, false);
 					noMovesBlack.addEventListener("load", loadHandler, false);
 					noMovesWhite.addEventListener("load", loadHandler, false);
+					noMovesBigley.addEventListener("load", loadHandler, false);
 					instructions.addEventListener("load", loadHandler, false);
 					halo.addEventListener("load", loadHandler, false);
 					halo_black.addEventListener("load", loadHandler, false);
@@ -780,6 +978,7 @@
 					circle_white.addEventListener("load", loadHandler, false);
 					reversi32.addEventListener("load", loadHandler, false);
 					tiltMe.addEventListener("load", loadHandler, false);
+					tiltMeBlue.addEventListener("load", loadHandler, false);
 					bigleyFaceBlack.addEventListener("load", loadHandler, false);
 					bigleyFaceWhite.addEventListener("load", loadHandler, false);
 					bigleyFaceBlackBlink.addEventListener("load", loadHandler, false);
@@ -792,8 +991,13 @@
 					menu2p_green.addEventListener("load", loadHandler, false);
 					title.addEventListener("load", loadHandler, false);
 					startbtn.addEventListener("load", loadHandler, false);
+					startbtnRed.addEventListener("load", loadHandler, false);
+					pmBg.addEventListener("load", loadHandler, false);
 					//videoIntro.addEventListener('loadeddata', loadHandler, false);
 
+					assetsToLoad.push(blackHand);
+					assetsToLoad.push(whiteHand);
+					assetsToLoad.push(bigleyHead);
 					assetsToLoad.push(background);
 					assetsToLoad.push(blackPiece);
 					assetsToLoad.push(whitePiece);
@@ -809,6 +1013,7 @@
 					assetsToLoad.push(circle_white);
 					assetsToLoad.push(reversi32);
 					assetsToLoad.push(tiltMe);
+					assetsToLoad.push(tiltMeBlue);
 					assetsToLoad.push(bigleyFaceBlack);
 					assetsToLoad.push(bigleyFaceWhite);
 					assetsToLoad.push(bigleyFaceBlackBlink);
@@ -821,26 +1026,96 @@
 					assetsToLoad.push(menu2p_green);
 					assetsToLoad.push(title);
 					assetsToLoad.push(startbtn);
+					assetsToLoad.push(startbtnRed);
+					assetsToLoad.push(pmBg);
+					assetsToLoad.push(pmBg);
+					assetsToLoad.push(m4x4);
+					assetsToLoad.push(m4x4r);
+					assetsToLoad.push(m4x8);
+					assetsToLoad.push(m4x8r);
+					assetsToLoad.push(m8x8);
+					assetsToLoad.push(m8x8r);
 					//assetsToLoad.push(videoIntro);
+	}
+	function set16pieceMode()
+	{
+		numRows = 4;
+		numCols = 4;
+		rLen=120;
+		pRad=110;
+		setBeginning4Pieces();
+		reset();
+	}
+
+	function set24pieceMode()
+	{
+		numRows = 4;
+		numCols = 6;
+		rLen=120;
+		pRad=110;
+		setBeginning4Pieces();
+		reset();
+	}
+
+	function set32pieceMode()
+	{
+		numRows = 4;
+		numCols = 8;
+		rLen=120;
+		pRad=110;
+		//setBeginning4Pieces();
+		reset();
+	}
+
+	function set64pieceMode()
+	{
+		numRows = 8;
+		numCols = 8;
+		rLen=60;
+		pRad=55;
+		reset();
+		setBeginning4Pieces();
 	}
 
 	function setBeginning4Pieces()
 	{
+		return;
+
 		if(numCols==4)
 		{
 			setBeginning4Pieces4x4();
 		}
 		else if(numCols==8)
 		{
-			setBeginning4Pieces4x8();
+			if(numRows==4)
+				setBeginning4Pieces4x8();
+			else if(numRows==8)
+				setBeginning4Pieces8x8();
 		}
 	}
+
 	function setBeginning4Pieces4x8()
 	{
 		board[1][3] = -1;
 		board[1][4] = 1;
 		board[2][3] = 1;
 		board[2][4] = -1;
+	}
+
+	function setBeginning4Pieces8x8()
+	{
+		board[3][3] = -1;
+		board[3][4] = 1;
+		board[4][3] = 1;
+		board[4][4] = -1;
+	}
+
+	function setBeginning4Pieces4x6()
+	{
+		board[1][2] = -1;
+		board[1][3] = 1;
+		board[2][2] = 1;
+		board[2][3] = -1;
 	}
 
 	function setBeginning4Pieces4x4()
@@ -903,21 +1178,30 @@
 
 	function alertCredits()
 	{
-		alert("CREDITS\nPROGRAMMER/DIRECTOR: CALVIN THAM\n MUSIC COMPOSER: PERRY BURKUM\n GRAPHIC DESIGNER/MOVIE ANIMATOR: SKYLER FOXX\n CRAGWORKS LOGO: SATCH+SKYLER\n REVERSI 32 LOGO: GRAHAM BURKUM (AWFUL CREATIVE)");
+		alert("CREDITS\nPROGRAMMER/DIRECTOR: CALVIN THAM\n MUSIC COMPOSER: PERRY BURKUM+Mark Nielsen\n GRAPHIC DESIGNER/MOVIE ANIMATOR: SKYLER FOXX\n CRAGWORKS LOGO: SATCH+SKYLER\n REVERSI 32 LOGO: GRAHAM BURKUM (AWFUL CREATIVE)");
 	}
 
 	function reset()
 	{
-		whosTurn = 0;
+		if(redBgOn)
+			whosTurn = 1;
+		else
+			whosTurn = 1;
+		// if(randFloat(0,10)>5)
+		// 	whosTurn = 1;
+		// else
+		// 	whosTurn = -1;
       	gameOver=false;
       	winner=0;
-      	numWhitePieces=2;
-      	numBlackPieces=2;
+      	numWhitePieces=0;
+      	numBlackPieces=0;
       	state=0;
       	noMovesAvailable=false;
       	clearBoard();
-      	setBeginning4Pieces();
+      	startingX = (GP_WIDTH-rLen*numCols)/2;
+      	//setBeginning4Pieces();
       	setDefaultRectBoard();
+      	startbtn_rect = new rect(300,325,250,125);
 	}
 
 	function calibrate()
@@ -933,14 +1217,25 @@
 
 	function drawBlueBoard()
 	{
-		var color = "rgb(0,0,0)";
+		var color = "rgb(255,255,255)";
 		gpContext.fillStyle = color;
 		gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
 	}
 
 	function drawBackground()
-	{
-		gpContext.drawImage(background, 0, 0, GP_WIDTH, GP_HEIGHT);
+	 {
+	 	drawBlueBoard();
+		if(numCols!=4)
+		{
+			if(numRows==8)
+				{
+					var color = "rgb(0,200,0)";
+					gpContext.fillStyle = color;
+					gpContext.fillRect(startingX, 0, GP_WIDTH*.57, GP_HEIGHT);
+				}
+			else
+				gpContext.drawImage(background, startingX, 0, numCols*rLen,numRows*rLen);
+		}
 	}
 
 	function drawInstructions()
@@ -981,16 +1276,19 @@
 
   		 this.flipToZero = false;
   		 this.flipToFull = false;
+  		 this.flipForever = false; //this is constant flipping animation for show available moves
   		 this.flipPr = -1; //0 to 32 because 4 x 8 this is which flips first
   		 this.haloSec = 0;
   		 this.haloMax = 20;
   		 this.fadeToZero = false;
+  		 this.r = -1;
+  		 this.c = -1;
 	}
 
 	var rectBoard = new Array(numRows);
 	var startingX = (GP_WIDTH-rLen*numCols)/2;
 	setDefaultRectBoard();
-	setBeginning4Pieces();
+	//setBeginning4Pieces();
 	function setDefaultRectBoard()
 	{
 		var centerDif = (rLen - pRad)/2;
@@ -1006,6 +1304,8 @@
 				var width = pRad;
 				var height = pRad;
 				rectBoard[r][c] = new rect(x,y,width,height);
+				rectBoard[r][c].r = r;
+				rectBoard[r][c].c = c;
 			}
 		}
 	}
@@ -1026,23 +1326,35 @@
 		if( board[r][c] == -1)
 		{
 			if(rectBoard[r][c].flipToZero)
-				gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				if(!spinningOn && !rectBoard[r][c].flipForever)
+					gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				else
+					gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
 			else
-				gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				if(!spinningOn && !rectBoard[r][c].flipForever)
+					gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				else
+					gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+
 		}
 		else if( board[r][c] == 1)
 		{
 			if(rectBoard[r][c].flipToZero)
-				gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				if(!spinningOn && !rectBoard[r][c].flipForever)gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				else
+					gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
 			else
-				gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				if(!spinningOn && !rectBoard[r][c].flipForever)
+					gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				else
+					gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
 		}
 
 		if((board[r][c]!=0 && gameOver==true && board[r][c]==winner && rectBoard[r][c].flipPr==-1) || winner==2 && numBlackPieces>5){ 
 			drawCrown(r, c);
 			
 		}
-		if(redBgOn && board[r][c]!=0) 
+		if(redBgOn && board[r][c]!=0 && rectBoard[r][c].flipForever!=true && !rectBoard[r][c].flipToZero && !rectBoard[r][c].flipToZero) 
 			drawBigleyFace(r, c, board[r][c]*-1);
 	}
 
@@ -1072,6 +1384,7 @@
 
 	function drawCrown(r, c)
 	{
+
 		gpContext.save();
 		if(redBgOn)
 			gpContext.globalAlpha = 1;
@@ -1084,12 +1397,12 @@
 		checkIfFlipping();
 		if(noMovesMsec==0&&!isFlipping&&!redBgOn)
 			{
-				if(winner==1)
-					alertBlackWins();
-				else if(winner==-1)
-					alertWhiteWins();
-				else
-					alertTie();
+				// if(winner==1)
+				// 	//alertBlackWins();
+				// else if(winner==-1)
+				// 	//alertWhiteWins();
+				// else
+				// 	//alertTie();
 			}
 	}
 
@@ -1143,16 +1456,16 @@
 	{
 		var centerDif = (rLen - pRad)/2;
 		//var startingX = -rLen/2;
-		var rectBoardWidth = pRad+10;
-		var x = startingX + c * rLen + centerDif;
-		var y = r * rLen + centerDif;
-		gpContext.drawImage(tiltMe, x, y-5,rectBoardWidth, rectBoardWidth);
+		var rectBoardWidth = rLen;
+		var x = startingX + c * rLen;
+		var y = r * rLen;
+
+		if(numCols==4)
+			gpContext.drawImage(tiltMe, x, y,rectBoardWidth, rectBoardWidth);
 	}
 
 	function drawTitle()
 	{
-		if(!redBgOn)
-			return;
 			for(var r = 0; r < numRows; r++)
 			{
 				for(var c = 0; c < numCols; c++)
@@ -1165,8 +1478,11 @@
 	function drawLinesOnBoard()
 	{
 		gpContext.beginPath();
-		gpContext.lineWidth="3.25";
-		gpContext.strokeStyle = "black";
+		gpContext.lineWidth="3.75";
+		if(numCols==8&&numRows==8)
+			gpContext.lineWidth="4";
+
+		gpContext.strokeStyle = "white";
 
 		//startingX = -rLen/2;
 		for(r = 0; r < numRows; r++)
@@ -1315,6 +1631,7 @@
 	}
 	function playFallSound()
 	{
+		//return;
 		if(redBgOn)
       		audioManager.playSound(screamSfx, 'gamepad');
 		else 
@@ -1323,11 +1640,18 @@
 
 	function playFlipSound()
 	{
+		//return;
+    	var sfx = new Audio('sfx/placed3.ogg');
 		//uncomment
-		// if(randFloat(0,1)>=0.5)
-		// 	audioManager.playSound(pieceFlipSfx, 'gamepad', 0.01);
-		// else
-		// 	audioManager.playSound(pieceFlipSfx2, 'gamepad', 0.01);
+		if(randFloat(0,1)>=0.5)
+			sfx = new Audio('sfx/pieces_flipping6.ogg');
+			//audioManager.playSound(pieceFlipSfx, 'gamepad', 0.01);
+		else
+			sfx = new Audio('sfx/pieces_flipping7.ogg');
+			// audioManager.playSound(pieceFlipSfx2, 'gamepad', 0.01);
+
+		sfx.play();
+		sfx.loop=false;
 	}
 
 	//var nowPr = 0;
@@ -1345,7 +1669,8 @@
 		{
 			rectBoard[r][c].flipToZero = false;
 			rectBoard[r][c].flipToFull = true;
-      		playFlipSound();
+      		if(rectBoard[r][c].flipForever==false)
+      			playFlipSound();
 		}	
 	}
 
@@ -1403,15 +1728,30 @@
 		return flipAmount;
 	}
 
+	var flipForeverAmount = 10;
+	var spinningModeOn = true;
+	var spinningOn = spinningModeOn;
 	function flipPiece(r, c, flipAmount)
 	{
 		if(rectBoard[r][c].flipToZero == true)
 		{
-			flipPieceToZeroSize(r, c, flipAmount);
+			if(spinningOn)
+			{
+				flipPieceToZeroSize(r, c, flipForeverAmount);
+				//rectBoard[r][c].flipForever = false;
+			}
+			else
+				flipPieceToZeroSize(r, c, flipAmount);
 		}
 		else
 		{
-			flipPieceToNormalSize(r, c, flipAmount);
+			if(spinningOn)
+			{
+				flipPieceToNormalSize(r, c, flipForeverAmount);
+				//rectBoard[r][c].flipForever = false;
+			}
+			else
+				flipPieceToNormalSize(r, c, flipAmount);
 		}
 	}
 	function flipPiecesRect()
@@ -1430,6 +1770,11 @@
 					matchedAPr = true;
 					isFlipping = true;
 					flipPiece(r, c, flipAmount);
+
+					if(whosTurn==-1)
+						updateBlackScoreLoc(rectBoard[r][c].x,rectBoard[r][c].y);
+					else
+						updateWhiteScoreLoc(rectBoard[r][c].x,rectBoard[r][c].y);
 				}
 				else if(rectBoard[r][c].flipToZero==true)
 				{
@@ -1447,6 +1792,8 @@
 		{
 			if(nowPr[i] < 8)
 				nowPr[i]++;
+			else if(spinningModeOn)// && !isFlipping)
+				spinningOn = true;
 			isFlipping = false;
 		}
 	}
@@ -1503,13 +1850,19 @@
 
 		//check if no moves available -> game over or show "Black Piece has No Moves"
 
+		//tallyBoardPieces();
+		if(numWhitePieces+numBlackPieces<4)
+			return;
+
 		if(whosTurn!=0 && moves==false)
 		{
+			gameOver=true;
 			switchTurn();
 			if(getAvailableMovesArray()==false)
 			{
 				tallyBoardPiecesAndWinner();
-				gameOver=true;
+				makeConfetti();
+				playMusic();
 				playWinSound();
 
 				//play bigley animations
@@ -1569,16 +1922,17 @@
 
 	function confirmPlayAgain()
 	{
-		if (confirm('Play Again?'))
-		{
-			reset();
-			gameMode=2;
-		}
-		else
-		{			
-			reset();
-			gameMode=0;
-		}
+
+		// if (confirm('Play Again?'))
+		// {
+		// 	reset();
+		// 	gameMode=3;
+		// }
+		// else
+		// {			
+		// 	reset();
+		// 	gameMode=0;
+		// }
 	}
 
 	function alertBlackWins()
@@ -1628,14 +1982,14 @@
 			video.load();
 			//video.pause();
 			videoToPlay=-1;
-			if(confirm("Bigley beat you! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
-			{
-				confirmPlayAgain();
-			}
-			else
-			{
-				confirmPlayAgain();
-			}
+			// if(confirm("Bigley beat you! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			// {
+			// 	confirmPlayAgain();
+			// }
+			// else
+			// {
+			// 	confirmPlayAgain();
+			// }
 		}
 		else if(video.paused==true)
 			video.play();
@@ -1652,14 +2006,14 @@
 			video2.load();
 			//video2.pause();
 			videoToPlay=-1;
-			if(confirm("You beat Bigley! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
-			{
-				confirmPlayAgain();
-			}
-			else
-			{
-				confirmPlayAgain();
-			}
+			// if(confirm("You beat Bigley! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			// {
+			// 	confirmPlayAgain();
+			// }
+			// else
+			// {
+			// 	confirmPlayAgain();
+			// }
 		}
 		else if(video2.paused==true)
 			video2.play();
@@ -1676,14 +2030,14 @@
 			video3.load();
 			//video3.pause();
 			videoToPlay=-1;
-			if(confirm("Tied with Bigley! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
-			{
-				confirmPlayAgain();
-			}
-			else
-			{
-				confirmPlayAgain();
-			}
+			// if(confirm("Tied with Bigley! \n You: "+numBlackPieces+"\n Bigley: "+numWhitePieces))
+			// {
+			// 	confirmPlayAgain();
+			// }
+			// else
+			// {
+			// 	confirmPlayAgain();
+			// }
 		}
 		else if(video3.paused==true)
 			video3.play();
@@ -1691,8 +2045,9 @@
 	function playReversi32Intro()
 	{
 		videoToPlay = 3;
-		gpContext.drawImage(videoIntro,0,0,854,480);
-		
+		//gpContext.drawImage(videoIntro,300,73,854/3.275,480/3.7);
+		gpContext.drawImage(videoIntro,0,0,GP_WIDTH,GP_HEIGHT);
+	
 		if(videoIntro.ended)
 		{
 			videoIntro.pause();
@@ -1702,7 +2057,10 @@
 			videoToPlay=-1;
 		}
 		else if(videoIntro.paused==true)
+		{
 			videoIntro.play();
+			videoIntro.muted=false;
+		}
 	}
 
 	function videoPlayer()
@@ -1727,11 +2085,14 @@
 		}
 	}
 
+	var onTitle = true;
 	function drawTitleScreen() {
 		//title
+		onTitle = true;
+
+		//gpContext.fillRect(0,-GP_HEIGHT+GP_HEIGHT*time/20,GP_WIDTH,GP_HEIGHT);
 		gpContext.drawImage(title, 0,0,GP_WIDTH,GP_HEIGHT);
 		gpContext.drawImage(startbtn, startbtn_rect.x, startbtn_rect.y,startbtn_rect.width,startbtn_rect.height);
-
 		//tiles up and down
 		var tWidth = 225;
 		//gpContext.drawImage(whitePiece, 50, 298, tWidth, tWidth);
@@ -1749,26 +2110,45 @@
 		//background
 		var color = "rgb(255,255,255)";
 		gpContext.fillStyle = color;
-		gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
+		//gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
 
 		//1p
 		
 			//press
 			//gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
 			//green
-		if(trans_total==-1 || !redBgOn)
-			gpContext.drawImage(menu1p, menuX, menuY, menuW,menuH);
-		else if(redBgOn)
-			gpContext.drawImage(menu1p_press, menuX, menuY+10, menuW*0.95,menuH*0.95);
+		//if(trans_total==-1 || !redBgOn)
+			gpContext.drawImage(menu1p, menu1p_rect.x,menu1p_rect.y,menu1p_rect.width,menu1p_rect.height);
 		//2p
-		if(trans_total==-1 || redBgOn)
-			gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
-		else if(!redBgOn)
-			gpContext.drawImage(menu2p_press, menuX+menuW*1.25, menuY+10, menuW*0.95,menuH*0.95);
+		//if(trans_total==-1 || redBgOn)
+			gpContext.drawImage(menu2p, menu2p_rect.x, menu2p_rect.y,menu2p_rect.width,menu2p_rect.height);
 			//press
 			//gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
 			//green
 			//gpContext.drawImage(menu2p, menuX+menuW*1.25, menuY, menuW,menuH);
+	}
+
+	function drawPiecesMenu() {
+		//background
+		// var color = "rgb(255,255,255)";
+		// gpContext.fillStyle = color;
+		//gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
+
+		
+		if(redBgOn||numCols==4)
+		{
+			gpContext.drawImage(m4x4r, m4x4_rect.x,m4x4_rect.y,m4x4_rect.width,m4x4_rect.height);
+			gpContext.drawImage(m4x8r, m4x8_rect.x,m4x8_rect.y,m4x8_rect.width,	m4x8_rect.height);
+			gpContext.drawImage(m8x8r, m8x8_rect.x,m8x8_rect.y,m8x8_rect.width,m8x8_rect.height);
+			gpContext.drawImage(pmBg, 0,0,GP_WIDTH,GP_HEIGHT);
+		}
+		else
+		{
+			gpContext.drawImage(m4x4, m4x4_rect.x,m4x4_rect.y,m4x4_rect.width,m4x4_rect.height);
+			gpContext.drawImage(m4x8, m4x8_rect.x,m4x8_rect.y,m4x8_rect.width,m4x8_rect.height);
+			gpContext.drawImage(m8x8, m8x8_rect.x,m8x8_rect.y,m8x8_rect.width,m8x8_rect.height);
+			gpContext.drawImage(pmBg, 0,0,GP_WIDTH,GP_HEIGHT);
+		}
 	}
 
 	function getRandomInt(min, max) {
@@ -1782,6 +2162,7 @@
 	var alpha = 0,          /// current alpha
     delta = 0.08,        /// delta value = speed
     img = new Image();  /// create image to draw
+	var tType = "corner";
 
     function doTransition()
     {
@@ -1789,29 +2170,93 @@
 		else	doTransitionCheck();
     }
 
+    var pieceTemp = -1;
 	function doTransitionFade()
 	{
 		if(trans_total==-1)
 			return;
 
-        //// if delta <=0 or >=1 then reverse
-       // if (alpha <= 0 || alpha >= 1) delta = -delta;
-        /// clear canvas
-        if(trans_total>15)
+        if(trans_total>0)
         {
-		alpha += delta;
-        	gpContext.fillRect(0, 0, GP_WIDTH, GP_HEIGHT);
-       	 /// set global alpha
-        gpContext.globalAlpha = alpha;
-        /// re-draw image
-        gpContext.drawImage(img, 0, 0);
-
+			alpha += delta;
 
 		var color = "rgb(255,255,255)";
 		gpContext.fillStyle = color;
 		}
+
+		var temp=-1;
+		if(gameMode==0)
+			temp = startbtn_rect;
+		else if(gameMode==1)
+		{
+			if(redBgOn)
+				temp = menu1p_rect;
+			else
+				temp = menu2p_rect;
+		}
+		else if(gameMode==2)
+		{
+			if(numRows==4 && numCols==4)
+				temp = m4x4_rect;
+			if(numRows==4 && numCols==8)
+				temp = m4x8_rect;
+			if(numRows==8 && numCols==8)
+				temp = m8x8_rect;
+		}
+		else if(gameMode==3)
+		{
+			if(pieceTemp!=-1)
+				temp = pieceTemp;
+			else
+			{
+				temp = -1;
+				stopTransition();
+				return;
+			}
+		}
+
+		if(temp==-1)
+			return;
+
+		if(trans_total<4)
+		{
+			if(tType=="grow"){
+        	temp.width+=trans_total*4*1.25;
+        	temp.x-=trans_total*2*1.25;
+        	temp.height+=trans_total*3*1.5;
+        	temp.y-=trans_total*1.5*1.25;}
+
+			if(tType=="corner"){
+        	temp.x+=trans_total*2*1.15;
+        	temp.y-=trans_total*1.5*1.15;}
+
+        }
+        else if(trans_total>4 && trans_total<6)
+        {
+        	if(tType=="grow"){
+			temp.width-=trans_total*4*1.25;
+        	temp.x+=trans_total*2*1.25;
+        	temp.height-=trans_total*3*1.5;
+        	temp.y+=trans_total*1.5*1.25;}
+
+   			if(tType=="corner"){
+   			temp.x-=trans_total*2*1.15;
+        	temp.y+=trans_total*1.5*1.15;}
+
+			if(gameMode==3&&pieceTemp!=-1)
+			{
+				var centerDif = (rLen - pRad)/2;
+				temp.x = startingX + temp.c * rLen + centerDif;
+				temp.y = temp.r * rLen + centerDif;
+				temp.width = pRad;
+				temp.height = pRad;
+				pieceTemp = -1;
+				return;
+			}
+        }
+
 		trans_total++;
-		if(trans_total==35)
+		if(trans_total==23)
 			stopTransition();
 	}
 
@@ -1851,10 +2296,15 @@
 		gpContext.globalAlpha=1;
 		alpha=0;
 
-		if(gameMode<3) 
+		if(gameMode==3)
+		{
+			return;
+		}
+		if(gameMode<4) 
 			gameMode++;
 		else
 			gameMode=0;
+
 	}
 
 	function nextMode()
@@ -1872,30 +2322,16 @@
 
 
 	function mainLoop() {
-		
-		if(gameMode==0)
-		{
-			if(videoToPlay==3)
-				videoPlayer();
-			else
-				drawTitleScreen();
-		}
-		else if(gameMode==1)
-			drawMenu();
-		else if(gameMode==2)
+		//add background playing game
+
+		if(gameMode<=2 && videoToPlay==-1)
 		{
 			drawBackground();
 			drawTitle();
+
 			drawLinesOnBoard();
 			drawBoardPieces();
-			showAvailableMoves();
-			drawInstructions();
-			drawNoMovesAvailable(whosTurn*-1);
-			videoPlayer();
-			//uncomment updateGpGyroAngles();	
-
-			bigleyInsertPieceIfHisTurn();
-			
+			//showAvailableMoves();
 			//flip pieces
 			if(waitmsec==0)
 			{
@@ -1903,6 +2339,61 @@
 			}
 			else
 				waitmsec-=1;
+
+			if(time%70==0 && gameMode<2)
+				if(!randomlyInsertPiece())
+					reset();
+		}
+		if(gameMode==0)
+		{
+			drawTitleScreen();
+		}
+		if(gameMode==0)
+		{
+			if(videoToPlay==3)
+				videoPlayer();
+		}
+		else if(gameMode==1)
+		{
+			drawMenu();
+		}
+		else if(gameMode==2)
+		{
+			drawPiecesMenu();
+		}
+		else if(gameMode==3)
+		{
+
+			drawBackground();
+			drawTitle();
+			drawLinesOnBoard();
+			drawBoardPieces();
+			showAvailableMoves();
+			//drawScores();
+			drawInstructions();
+			drawNoMovesAvailable(whosTurn*-1);
+			videoPlayer();
+			confettiStuff();
+			drawFinalScores();
+			//uncomment updateGpGyroAngles();	
+
+			bigleyInsertPieceIfHisTurn();
+			
+
+			//flip pieces
+			if(waitmsec==0)
+			{
+				flipPiecesRect();
+			}
+			else
+			{
+				if(spinningModeOn)
+				{
+					stopSpinning();
+					flipPiecesRect();
+				}
+				waitmsec-=1;
+			}
 
 			//drop pieces
 			if(state==1)
@@ -1926,6 +2417,230 @@
 
 		timeInc();
 		window.webkitRequestAnimationFrame(mainLoop);
+	}
+
+	function drawScore(text, x, y)
+    {
+		 gpContext.font = ' 30pt Arial';
+   		 gpContext.fillText(text, x, y);
+    }
+
+    var blackScoreX = 0;
+    var blackScoreY = 0;
+    var whiteScoreX = 0;
+    var whiteScoreY = 0;
+	function drawScores()
+	{
+		//tallyBoardPieces();
+
+		gpContext.fillStyle = "rgb(0,0,0)";;
+		//drawScore(""+numBlackPieces+"", blackScoreX, blackScoreY);
+		if(numBlackPieces>numWhitePieces)
+			gpContext.font = ' 30pt Arial';
+		else
+			gpContext.font = ' 20pt Arial';
+   		 gpContext.fillText(""+numBlackPieces+"", blackScoreX, blackScoreY);
+		gpContext.fillStyle = "rgb(255,255,255)";
+		//drawScore(""+numWhitePieces+"", whiteScoreX, whiteScoreY);
+		if(numBlackPieces<numWhitePieces)
+			gpContext.font = ' 30pt Arial';
+		else
+			gpContext.font = ' 20pt Arial';
+
+   		gpContext.fillText(""+numWhitePieces+"", whiteScoreX, whiteScoreY);
+	}
+
+	function confettiStuff()
+	{
+		if(gameOver==false||videoToPlay!=-1)
+			return;
+
+		if(confA==null)
+			makeConfetti();
+		moveConfetti();
+		drawConfetti();
+	}
+
+	var cNum = 10;
+	var cSize = 50;
+	var confA = new Array(cNum);
+	function confetti(x, y, width, height, color) {
+ 		 this.x = x;
+ 		 this.y = y;
+ 		 this.width = width;
+ 		 this.height = height;
+ 		 this.color = color;
+ 	}
+
+	function makeConfetti()
+	{
+		cNum=10;
+
+		for (var i = 0; i < cNum; i++)
+		{
+			//var color = "rgb("+getRandomInt(0,255)+","+getRandomInt(0,255)+","+getRandomInt(0,255)+")";
+			var color = "rgb(0,0,0)";
+			 color = "rgb(255,255,255)";
+			confA[i] = new confetti(getRandomInt(0,GP_WIDTH),getRandomInt(0,GP_HEIGHT)-GP_HEIGHT*1.25,cSize,cSize, color);
+		}
+	}
+
+	function moveConfetti()
+	{
+		if(confA==null)
+			makeConfetti();
+		for (var i = 0; i < cNum; i++)
+		{
+			if(confA[i]==null)
+				makeConfetti();
+			if(confA[i].y>GP_HEIGHT)
+			{
+				//var color = "rgb("+getRandomInt(0,255)+","+getRandomInt(0,255)+","+getRandomInt(0,255)+")";
+			var color = "rgb(0,0,0)";
+			if(winner==-1)
+				color = "rgb(255,255,255)";
+			confA[i].y-=GP_HEIGHT*1.1;
+			}
+			else
+			{
+				confA[i].y+=getRandomInt(1,5);
+			}
+		}
+	}
+
+	function drawConfetti()
+	{
+		for (var i = 0; i < cNum; i++)
+		{
+			gpContext.save();
+			gpContext.translate(confA[i].x+confA[i].width/2,confA[i].y+confA[i].height/2);
+			gpContext.rotate(confA[i].y*Math.PI/180);
+			gpContext.fillStyle=confA[i].color;
+			//gpContext.fillRect(0,0,confA[i].width,confA[i].height);
+			if(redBgOn&&winner==-1)
+				gpContext.drawImage(bigleyHead,0,0,confA[i].width,confA[i].height/2);
+			else
+				gpContext.drawImage(crown,0,0,confA[i].width,confA[i].height/2);
+			
+			//drawText("WIN",confA[i].width,confA[i].height/2);
+			gpContext.restore();
+		}
+	}
+
+	var fsTime = 0;
+	var numBlinks = 0;
+	function drawFinalScores()
+	{
+		if(!gameOver)
+			return;
+
+		if(fsTime<=0)
+		{
+			fsTime = time;
+			numBlinks++;
+		}
+		else
+			fsTime-=time/50;
+
+		gpContext.save();
+		gpContext.globalAlpha = 0.1;
+		gpContext.fillStyle = "rgb(255,255,255)";
+		gpContext.fillRect(0,0,GP_WIDTH,GP_HEIGHT);
+		gpContext.globalAlpha = 0.8;
+		gpContext.fillStyle = "rgb(0,255,0)";
+		gpContext.fillRect(0,GP_HEIGHT/1.75,GP_WIDTH,GP_HEIGHT/1.75);
+		gpContext.restore();
+
+		var size = 120*1.75;
+		//tallyBoardPieces();
+		gpContext.textAlign = "center";
+		gpContext.drawImage(blackPiece, GP_WIDTH/6,GP_HEIGHT/1.5-275,size,size);
+    		gpContext.drawImage(whitePiece, GP_WIDTH/6+GP_WIDTH/2.4,GP_HEIGHT/1.5-275,size,size);
+
+  		// if(winner==1)
+  		// 	gpContext.drawImage(blackPiece, GP_WIDTH/6+GP_WIDTH/3,GP_HEIGHT/1.5-275,size,size);
+   	// 	else if(winner==-1)
+   	// 		gpContext.drawImage(whitePiece, GP_WIDTH/5,GP_HEIGHT/1.5-275,size,size);
+
+		gpContext.save();
+		gpContext.globalAlpha = (fsTime*1.0)/time;
+
+		if(winner==1)
+		{
+			gpContext.fillStyle = "rgb(0,0,0)";
+			gpContext.font = 'bold 60pt Arial';
+   			if(redBgOn)
+   				gpContext.fillText("YOU WIN", GP_WIDTH/2,GP_HEIGHT/1.6);
+   			else
+   				gpContext.fillText("BLACK WINS", GP_WIDTH/2,GP_HEIGHT/1.6);
+
+			gpContext.font = 'bold 120pt Arial';
+			gpContext.fillText(numBlackPieces, GP_WIDTH/6+size/2,GP_HEIGHT/1.1);
+   			gpContext.restore();
+			gpContext.font = 'bold 120pt Arial';
+   			gpContext.fillStyle = "rgb(255,255,255)";
+  	 		gpContext.fillText(numWhitePieces, GP_WIDTH/6+GP_WIDTH/2.4+size/2,GP_HEIGHT/1.1);
+		}
+		else if(winner==-1)
+		{
+			//gpContext.drawImage(whitePiece, GP_WIDTH/6+GP_WIDTH/2.4,GP_HEIGHT/1.5-275,size,size);
+			gpContext.fillStyle = "rgb(255,255,255)";
+			gpContext.font = 'bold 60pt Arial';
+   			if(redBgOn)
+   				gpContext.fillText("BIGLEY WINS", GP_WIDTH/2,GP_HEIGHT/1.6);
+			else
+   				gpContext.fillText("WHITE WINS", GP_WIDTH/2,GP_HEIGHT/1.6);
+
+			gpContext.font = 'bold 120pt Arial';
+  	 		gpContext.fillText(numWhitePieces, GP_WIDTH/6+GP_WIDTH/2.4+size/2,GP_HEIGHT/1.1);
+  	 		gpContext.restore();
+  	 		gpContext.fillStyle = "rgb(0,0,0)";
+			gpContext.font = 'bold 120pt Arial';
+			gpContext.fillText(numBlackPieces, GP_WIDTH/6+size/2,GP_HEIGHT/1.1);
+   		}
+   		else
+   		{
+   			//gpContext.drawImage(whitePiece, GP_WIDTH/6+GP_WIDTH/2.4,GP_HEIGHT/1.5-275,size,size);
+			gpContext.fillStyle = "rgb(255,255,255)";
+			gpContext.font = 'bold 60pt Arial';
+   			gpContext.fillText("IT'S A TIE", GP_WIDTH/2,GP_HEIGHT/1.6);
+  	 		gpContext.fillStyle = "rgb(0,0,0)";
+			gpContext.font = 'bold 120pt Arial';
+  	 		gpContext.fillText(numWhitePieces, GP_WIDTH/6+GP_WIDTH/2.4+size/2,GP_HEIGHT/1.1);
+			gpContext.fillText(numBlackPieces, GP_WIDTH/6+size/2,GP_HEIGHT/1.1);
+  	 		gpContext.restore();
+   		}
+
+
+		if(redBgOn) 
+		{
+			gpContext.save();
+			//gpContext.translate(rectBoard[r][c].x+pRad/2, rectBoard[r][c].y+pRad/2);
+			//gpContext.rotate((100)*Math.PI/180);
+
+			var num = time%(100);
+
+			//if(color==1&&rectBoard[r][c].flipToZero==false || color==-1&&rectBoard[r][c].flipToZero==true)
+			{
+				if(num>95) gpContext.drawImage(bigleyFaceBlackBlink, GP_WIDTH/6+GP_WIDTH/2.4,GP_HEIGHT/1.5-275,size,size);
+				else gpContext.drawImage(bigleyFaceBlack, GP_WIDTH/6+GP_WIDTH/2.4,GP_HEIGHT/1.5-275,size,size);
+			}
+			
+			gpContext.restore();
+		}
+
+	}
+
+	function updateBlackScoreLoc(x,y)
+	{
+		blackScoreX = x;
+		blackScoreY = y;
+	}
+
+	function updateWhiteScoreLoc(x,y)
+	{
+		whiteScoreX = x;
+		whiteScoreY = y;
 	}
 
 	function timeInc()
@@ -1964,7 +2679,10 @@
 		}
 		else if(blackOrWhite==-1)
 		{
-			gpContext.drawImage(noMovesWhite, 0, (GP_HEIGHT-GP_HEIGHT*dif)/2, GP_WIDTH, GP_HEIGHT*dif);
+			if(redBgOn)
+				gpContext.drawImage(noMovesBigley, 0, (GP_HEIGHT-GP_HEIGHT*dif)/2, GP_WIDTH, GP_HEIGHT*dif);
+			else
+				gpContext.drawImage(noMovesWhite, 0, (GP_HEIGHT-GP_HEIGHT*dif)/2, GP_WIDTH, GP_HEIGHT*dif);
 		}
 		gpContext.restore();
 	}
@@ -2022,10 +2740,10 @@
 
 			var centerDif = (rLen - pRad)/2;
 			if(blackOrWhite==1)
-				gpContext.drawImage(blackPiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				gpContext.drawImage(blackHand, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
 			else if(!redBgOn)
 			{
-				gpContext.drawImage(whitePiece, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
+				gpContext.drawImage(whiteHand, rectBoard[r][c].x, rectBoard[r][c].y,rectBoard[r][c].width,rectBoard[r][c].height);
 				if(redBgOn) 
 					{
 						gpContext.save();
@@ -2038,7 +2756,31 @@
 
 	}
 
-	function tallyBoardPiecesAndWinner()
+	function stopSpinning() //pause spinning when touchstart
+	{
+		spinningOn=false;
+		for (var r = 0; r < numRows; r++) 
+				{
+					for(var c = 0; c < numCols; c++) 
+					{
+						if(rectBoard[r][c].flipForever==true)
+						{
+							rectBoard[r][c].flipForever=false;
+							rectBoard[r][c].flipToZero=false;
+							console.log("SOP");
+			var centerDif = (rLen - pRad)/2;
+			//rectBoard[r][c].width = pRad;
+			//rectBoard[r][c].x = startingX + c * rLen + centerDif;
+			rectBoard[r][c].flipPr = 0;
+			rectBoard[r][c].flipToFull = true;
+
+			//flipPieceToNormalSize(r,c,pRad/10);
+						}
+					}
+				}
+	}
+
+	function tallyBoardPieces()
 	{
 		numBlackPieces=0;
 		numWhitePieces=0;
@@ -2056,6 +2798,12 @@
 				}
 			}
 		}
+	}
+
+	function tallyBoardPiecesAndWinner()
+	{
+		//tallyBoardPieces();
+
 		if(numBlackPieces>numWhitePieces)
 			winner=1;
 		else if(numBlackPieces<numWhitePieces)
@@ -2066,7 +2814,7 @@
 
 	function getAvailableMovesArray()
 	{
-		var movesBoard = new Array(numRows); //0 = no move available, 1 = move available
+		var movesBoard = new Array(numRows); //0 = no move available, 1 = move available 2 means between pieces that can be flipped
 		for(var i = 0; i < numRows; i++)
 		{
 			movesBoard[i] = new Array(numCols);
@@ -2084,6 +2832,10 @@
 				if(board[r][c]==0)
 				{
 					var canInsert = false;
+
+					//starting place pieces
+					if(numBlackPieces+numWhitePieces<4)
+						canInsert = true;
 
 					if(whosTurn!=0) //not starting move
 					{
@@ -2103,6 +2855,10 @@
 					}
 					else if(whosTurn==0 && state!=1 && isShowingAvailableMoves) //starting move
 					{
+					//starting place pieces
+					if(numBlackPieces+numWhitePieces<4)
+						canInsert = true;
+
 						if( checkCanInsertBoardPieceUpLeft(r, c, 1, -1, false) ) canInsert = true;
 						if( checkCanInsertBoardPieceUp(r, c, 1, -1, false) ) canInsert = true;
 						if( checkCanInsertBoardPieceUpRight(r, c, 1, -1, false) ) canInsert = true;
@@ -2160,6 +2916,8 @@
 
 	function flipPiecesFrom(i, j, r, c, maxFlipPr)
 	{
+		if(spinningOn) stopSpinning();
+		if(board[i][j]==1){ numBlackPieces--; numWhitePieces++;} else{ numBlackPieces++; numWhitePieces--;} 
 		board[i][j] *= -1;
 		rectBoard[i][j].flipToZero = true;
 		rectBoard[i][j].flipPr = maxFlipPr;
@@ -2180,14 +2938,87 @@
 		}
 	}
 
+	function flipPiecesFrom2(i, j, r, c, maxFlipPr)
+	{
+		//board[i][j] *= -1;
+		if(rectBoard[i][j].flipToZero==false && rectBoard[i][j].flipToFull==false)
+			rectBoard[i][j].flipToZero = true;
+		else if(rectBoard[i][j].flipToFull==false)
+			rectBoard[i][j].flipToZero = true;
+		
+		rectBoard[i][j].flipForever = true;
+
+		rectBoard[i][j].flipPr = maxFlipPr;
+		maxFlipPr++;
+
+		if(i!=r || j!=c)
+		{
+			if(i<r)
+				i++;
+			else if(i>r)
+				i--;
+
+			if(j<c)
+				j++;
+			else if(j>c)
+				j--;
+			flipPiecesFrom2(i, j, r, c, maxFlipPr);
+		}
+	}
+
 	var bigleyInsertTime = -1;
 	function bigleyInsertPieceIfHisTurn()
 	{
 		if(redBgOn && !isFlipping && whosTurn==-1 && time>bigleyInsertTime)
 		{
-			randomlyInsertPieceLeftToRight();
+			randomlyInsertPiece();
 			
 		}
+	}
+
+	function randomlyInsertPiece()
+	{
+		var insertedPiece = false;
+		while(insertedPiece==false && getAvailableMovesArray()!=false)
+		{
+			var r = getRandomInt(0,numRows);
+			var c = getRandomInt(0,numCols);
+			if(whosTurn == 0)
+			{
+				if(checkFirstMoveSetWhosTurn(r,c))
+				{
+					if(!isFlipping && waitmsec==0)
+						waitmsec = 10;
+					nowPr[nowPrI] = 0;
+					if(nowPrI<numPr-1)
+						nowPrI++;
+					else
+						nowPrI=0;
+					insertBoardPieceAt(r, c);
+					switchTurn();
+	      		    playPlaceSound();
+	      		    bigleyInsertTime = time+50;
+				}
+			}
+			else if( canInsertBoardPieceAt(r,c) )
+				{
+					insertedPiece = true;
+					if(!isFlipping && waitmsec==0)
+						waitmsec = 10;
+					nowPr[nowPrI] = 0;
+					if(nowPrI<numPr-1)
+							nowPrI++;
+						else
+							nowPrI=0;
+					noMovesMsec = 0;
+					noMovesAvailable = false;
+					insertBoardPieceAt(r, c);
+					switchTurn();
+		      		playPlaceSound();
+		      		bigleyInsertTime = time+50;
+				}
+		}
+		return insertedPiece;
 	}
 
 	function randomlyInsertPieceLeftToRight()
@@ -2197,9 +3028,10 @@
 		{
 			for(var c = 0; insertedPiece==false && c < numCols; c++)
 			{
-				if( canInsertBoardPieceAt(r,c) )
+				if(whosTurn == 0)
+			{
+				if(checkFirstMoveSetWhosTurn(r,c))
 				{
-					insertedPiece = true;
 					if(!isFlipping && waitmsec==0)
 						waitmsec = 10;
 					nowPr[nowPrI] = 0;
@@ -2207,14 +3039,34 @@
 						nowPrI++;
 					else
 						nowPrI=0;
+					insertBoardPieceAt(r, c);
+					switchTurn();
+	      		    playPlaceSound();
+	      		    bigleyInsertTime = time+50;
+				}
+
+			}
+			else if( canInsertBoardPieceAt(r,c) )
+				{
+					insertedPiece = true;
+					if(!isFlipping && waitmsec==0)
+						waitmsec = 10;
+					nowPr[nowPrI] = 0;
+					if(nowPrI<numPr-1)
+							nowPrI++;
+						else
+							nowPrI=0;
 					noMovesMsec = 0;
 					noMovesAvailable = false;
 					insertBoardPieceAt(r, c);
 					switchTurn();
-      				playPlaceSound();
+		      		playPlaceSound();
+		      		bigleyInsertTime = time+50;
 				}
+
 			}
 		}
+		return insertedPiece;
 	}
 
 	function randomlyInsertPieceRightToLeft()
@@ -2245,6 +3097,7 @@
 					if(board[i][j]==whosTurn)
 					{
 						if(shouldFlip) flipPiecesFrom(r-1, c-1, i+1, j+1, 0);
+						else if(spinningOn)  flipPiecesFrom2(r-1, c-1, i+1, j+1, 0);
 						return true;
 					}
 					else if(board[i][j] == 0)
@@ -2260,6 +3113,7 @@
 				if(board[i][c]==whosTurn)
 				{
 					if(shouldFlip) flipPiecesFrom(r-1, c, i+1, c, 0);
+					else if(spinningOn)  flipPiecesFrom2(r-1, c, i+1, c, 0);
 					return true;
 				}
 				else if(board[i][c] == 0)
@@ -2275,6 +3129,7 @@
 					if(board[i][j]==whosTurn)
 					{
 						if(shouldFlip) flipPiecesFrom(r-1, c+1, i+1, j-1, 0);
+						else if(spinningOn)  flipPiecesFrom2(r-1, c+1, i+1, j-1, 0);
 						return true;
 					}
 					else if(board[i][j] == 0)
@@ -2290,6 +3145,7 @@
 				if(board[r][j]==whosTurn)
 				{
 					if(shouldFlip) flipPiecesFrom(r, c+1, r, j-1, 0);
+					else if(spinningOn)  flipPiecesFrom2(r, c+1, r, j-1, 0);
 					return true;
 				}
 				else if(board[r][j] == 0)
@@ -2306,6 +3162,7 @@
 					if(board[i][j]==whosTurn)
 					{
 						if(shouldFlip) flipPiecesFrom(r+1, c+1, i-1, j-1, 0);
+						else if(spinningOn)  flipPiecesFrom2(r+1, c+1, i-1, j-1, 0);
 						return true;
 					}
 					else if(board[i][j] == 0)
@@ -2321,6 +3178,7 @@
 				if(board[i][c]==whosTurn)
 				{
 					if(shouldFlip) flipPiecesFrom(r+1, c, i-1, c, 0);
+					else if(spinningOn)  flipPiecesFrom2(r+1, c, i-1, c, 0);
 					return true;
 				}
 				else if(board[i][c] == 0)
@@ -2336,6 +3194,7 @@
 				if(board[i][j]==whosTurn)
 				{
 					if(shouldFlip) flipPiecesFrom(r+1, c-1, i-1, j+1, 0);
+					else if(spinningOn)  flipPiecesFrom2(r+1, c-1, i-1, j+1, 0);
 					return true;
 				}
 				else if(board[i][j] == 0)
@@ -2351,6 +3210,7 @@
 				if(board[r][j]==whosTurn)
 				{
 					if(shouldFlip) flipPiecesFrom(r, c-1, r, j+1, 0);
+					else if(spinningOn)  flipPiecesFrom2(r, c-1, r, j+1, 0);
 					return true;
 				}
 				else if(board[r][j] == 0)
@@ -2397,6 +3257,11 @@
  		if( board[r][c] != 0 )
  			return false;
 
+		//starting place pieces
+		//tallyBoardPieces();
+		if(board[r][c] == 0 && numBlackPieces+numWhitePieces<4)
+			canInsert = true;
+
  		if( checkCanInsertBoardPieceUpLeft(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
 		if( checkCanInsertBoardPieceUp(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
 		if( checkCanInsertBoardPieceUpRight(r, c, notWhosTurn, whosTurn, true) ) canInsert = true;
@@ -2412,6 +3277,7 @@
 	function insertBoardPieceAt(r, c)
 	{
 		board[r][c] = whosTurn;
+		if(whosTurn==1)numBlackPieces++; else numWhitePieces++;
 	}
 
 </script>
