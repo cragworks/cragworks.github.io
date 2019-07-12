@@ -864,12 +864,12 @@ window.addEventListener('keydown',
 	var menu1p = new Image();
 	var menu1p_press = new Image();
 	var menu1p_green = new Image();
-		var menuW = 300*1.2;
-		var menuH = 300*1.2;
-		var menuX = 30;
-		var menuY = 60;
+		var menuW = 300/1.5*1.;
+		var menuH = 300/1.5*1.;
+		var menuX = 175;
+		var menuY = 130;
 	var menu1p_rect = new rect(menuX, menuY, menuW,menuH);
-	var menu2p_rect = new rect(menuX+400, menuY, menuW,menuH);
+	var menu2p_rect = new rect(menuX+300, menuY, menuW,menuH);
 
 	var menu2p = new Image();
 	var menu2p_press = new Image();
@@ -917,7 +917,7 @@ window.addEventListener('keydown',
 	var isShowingInstructions = false;
 
 	var redBgOn = false;
-	var gameMode = -1; //-1 = intro 0 = title, 1 = menu, 2 = pieces menu, 3 = game
+	var gameMode = 3; //-1 = intro 0 = title, 1 = menu, 2 = pieces menu, 3 = game
 	var setupBoardMode = false;
 
 	loadImages();
