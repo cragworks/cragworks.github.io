@@ -3,10 +3,13 @@ body{
     background-color: rgb(255, 255, 255);
 }
 div{
-    margin-top:25px;
+    margin-top:-210px;
     margin-left: 25%;
     margin-right:25px;
-    background-color: rgb(255, 255, 255);
+    width: 50%;
+    background-color: rgb(252, 120, 68);
+    border-radius: 5px;
+    padding: 5px;
     
 }
 img, iframe{
@@ -21,8 +24,10 @@ b{
     margin: auto;
     width: 50%;
 }
-h3{
+h4{
+    background-color: rgb(252, 120, 68);
+    width: 15%;
 
-    margin-left: 25%;
+    border-radius: 5px;
+    padding: 5px;
 }
-
