@@ -31,10 +31,13 @@ body{
     padding: 5px;
     
 }
-img, iframe{
+img{
     border-radius: 25px;
     width: 100%;
     height: auto;
+}
+iframe{
+    border-radius: 25px;
 }
 hr{
     margin-right:25px;
